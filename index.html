@@ -26,7 +26,6 @@
       <span class="nav-user" id="nav-user"></span>
       <a href="./"            class="icon-btn active" data-ic="box"     title="Stock"></a>
       <a href="stats/"    class="icon-btn"        data-ic="chart"   title="Statistics"></a>
-      <button class="icon-btn" id="nav-settings-btn" data-ic="settings" title="Settings"></button>
       <a href="handbook/" target="_blank" class="icon-btn" data-ic="book" title="User Handbook"></a>
       <span class="nav-sep"></span>
       <button class="icon-btn danger" id="logout-btn" data-ic="logout" title="Sign out"></button>
@@ -152,7 +151,10 @@
               <label class="ml">Employee ID <span class="opt">(optional)</span></label>
               <input class="mi" id="issue-to-id" type="text" placeholder="Employee / staff ID" maxlength="40">
             </div>
-            <div></div>
+            <div class="mf">
+              <label class="ml">Notes <span class="opt">(optional)</span></label>
+              <input class="mi" id="issue-notes" type="text" placeholder="Reason, purpose, reference…" maxlength="200">
+            </div>
           </div>
           <button class="btn btn-primary btn-wide" id="issue-submit">
             <span data-ic="issue"></span>Issue Item
@@ -213,6 +215,17 @@
         </div>
 
         <div id="master-list"></div>
+
+        <div class="section-header" style="margin-top:28px">
+          <div class="section-title">Activity Log</div>
+          <span class="section-meta" id="audit-meta"></span>
+        </div>
+        <div class="audit-list" id="audit-list"></div>
+        <div class="empty-state hidden" id="audit-empty">
+          <div class="empty-state-ico"><span data-ic="history"></span></div>
+          <div class="empty-state-text">No activity yet</div>
+          <div class="empty-state-sub">Actions like adding items, issuing stock, and access changes will appear here.</div>
+        </div>
       </div>
 
       <!-- SETTINGS TAB -->
@@ -440,7 +453,6 @@ onAuthStateChanged(auth, user => {
 
 document.getElementById('logout-btn').addEventListener('click', doSignOut);
 async function doSignOut() { await signOut(auth); window.location.href = 'login/'; }
-document.getElementById('nav-settings-btn').addEventListener('click', () => switchTab('settings'));
 
 /* ── Tabs ── */
 function switchTab(name) {
@@ -478,7 +490,7 @@ async function initApp() {
   setupIssueForm();
   setupFilters();
   setupSearch();
-  if (isAdmin) setupMasterTab();
+  if (isAdmin) { setupMasterTab(); listenAudit(); }
   setupSettings();
 }
 
@@ -720,6 +732,7 @@ function stSetupItemAdd() {
       });
       nameInp.value = ''; thrInp.value = '';
       toast(`"${name}" added.`, 'ok');
+      logAudit('item.create', `Added item "${name}" (${unitSel.value}${thr > 0 ? ', min '+thr : ''})`);
     } catch { toast('Failed to add item.', 'err'); }
     btn.disabled = false;
   }
@@ -740,6 +753,7 @@ async function stConfirmDeleteItem(item) {
   try {
     await deleteDoc(doc(db, 'invItems', item.id));
     toast(`"${item.name}" deleted.`);
+    logAudit('item.delete', `Deleted item "${item.name}" (had ${fmt(item.currentStock || 0)} ${item.unit} in stock)`);
   } catch { toast('Failed to delete item.', 'err'); }
 }
 
@@ -783,6 +797,8 @@ async function stDeleteConfigItem(key, item) {
   rebuildDropdowns();
   stRenderConfig(key);
   toast(`"${item.name}" removed.`);
+  logAudit(`${key === 'suppliers' ? 'supplier' : 'location'}.delete`,
+    `Removed ${key === 'suppliers' ? 'supplier' : 'location'} "${item.name}"`);
 }
 
 /* ── Settings edit modal ── */
@@ -852,6 +868,7 @@ async function stEditItem(item) {
   try {
     await updateDoc(doc(db, 'invItems', item.id), { name: data.name, unit: data.unit, minThreshold: data.thr });
     toast(`"${data.name}" updated.`, 'ok');
+    logAudit('item.edit', `Edited item "${item.name}" → name: "${data.name}", unit: ${data.unit}, threshold: ${data.thr}`);
   } catch { toast('Failed to save changes.', 'err'); }
 }
 
@@ -875,6 +892,8 @@ async function stEditConfigItem(key, item) {
     rebuildDropdowns();
     stRenderConfig(key);
     toast(`"${data.name}" updated.`, 'ok');
+    logAudit(`${key === 'suppliers' ? 'supplier' : 'location'}.edit`,
+      `Edited ${key === 'suppliers' ? 'supplier' : 'location'} "${item.name}" → "${data.name}"`);
   } catch { toast('Failed to save changes.', 'err'); }
 }
 
@@ -894,6 +913,7 @@ function stSetupSupplierAdd() {
       stRenderConfig('suppliers');
       inp.value = '';
       toast(`"${name}" added.`, 'ok');
+      logAudit('supplier.create', `Added supplier "${name}"`);
     } catch { toast('Failed to save.', 'err'); }
     btn.disabled = false;
   }
@@ -917,6 +937,7 @@ function stSetupLocationAdd() {
       stRenderConfig('locations');
       inp.value = '';
       toast(`"${name}" added.`, 'ok');
+      logAudit('location.create', `Added location "${name}"`);
     } catch { toast('Failed to save.', 'err'); }
     btn.disabled = false;
   }
@@ -935,6 +956,66 @@ function updateItemSelects() {
   if (curIssue) document.getElementById('issue-item').value = curIssue;
   updateAddUnitHint();
   updateIssueHints();
+}
+
+/* ── Audit log ── */
+async function logAudit(action, detail) {
+  if (!currentUser) return;
+  try {
+    await addDoc(collection(db, 'invAudit'), {
+      action, detail,
+      by: currentUser.uid, byEmail: currentUser.email,
+      at: serverTimestamp()
+    });
+  } catch (e) { console.warn('audit log write failed', e); }
+}
+
+function listenAudit() {
+  const q = query(collection(db, 'invAudit'), orderBy('at', 'desc'), limit(300));
+  onSnapshot(q, snap => {
+    renderAudit(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  });
+}
+
+const AUDIT_LABELS = {
+  'item.create': 'Item Added',    'item.edit': 'Item Edited',      'item.delete': 'Item Deleted',
+  'supplier.create': 'Supplier Added', 'supplier.edit': 'Supplier Edited', 'supplier.delete': 'Supplier Removed',
+  'location.create': 'Location Added', 'location.edit': 'Location Edited', 'location.delete': 'Location Removed',
+  'tx.in': 'Stock In',   'tx.return': 'Return',  'tx.issue': 'Issue',
+  'tx.void': 'Voided',   'tx.delete': 'Deleted',
+  'access.approve': 'User Added', 'access.remove': 'User Removed', 'access.admin': 'Admin Changed',
+};
+
+function auditCategory(action) {
+  if (action.startsWith('item.'))     return 'item';
+  if (action.startsWith('supplier.') || action.startsWith('location.')) return 'config';
+  if (action.startsWith('tx.'))       return 'tx';
+  if (action.startsWith('access.'))   return 'access';
+  return 'other';
+}
+
+function renderAudit(logs) {
+  const list  = document.getElementById('audit-list');
+  const empty = document.getElementById('audit-empty');
+  const meta  = document.getElementById('audit-meta');
+  if (!list) return;
+  meta.textContent = logs.length ? `${logs.length} events` : '';
+  list.innerHTML = '';
+  if (!logs.length) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  logs.forEach(log => {
+    const ts  = log.at?.toDate ? log.at.toDate() : new Date();
+    const cat = auditCategory(log.action);
+    const row = document.createElement('div');
+    row.className = `audit-row audit-${cat}`;
+    row.innerHTML = `
+      <span class="audit-badge">${esc(AUDIT_LABELS[log.action] || log.action)}</span>
+      <div class="audit-info">
+        <div class="audit-detail">${esc(log.detail)}</div>
+        <div class="audit-by">${window.icon('user')} ${esc(log.byEmail || '—')} · ${relTime(ts)}</div>
+      </div>`;
+    list.appendChild(row);
+  });
 }
 
 /* ── History (real-time) ── */
@@ -1002,6 +1083,7 @@ function renderHistory() {
           ${isVoidEntry ? '<span class="tx-voided-pill">REVERSAL</span>' : ''}
         </div>
         <div class="tx-meta">${meta}</div>
+        ${tx.notes ? `<div class="tx-notes">${esc(tx.notes)}</div>` : ''}
         <div class="tx-by">${window.icon('user')} ${esc(tx.createdByEmail || '—')}</div>
       </div>
       <div class="tx-right">
@@ -1151,6 +1233,7 @@ async function addUserAccess() {
     renderAccessList();
     showMsg('master-ok', `${emailRaw} has been added.`, 'check');
     toast(`${emailRaw} added`, 'ok');
+    logAudit('access.approve', `Added user ${emailRaw}${makeAdm ? ' (admin)' : ''}`);
   } catch (e) {
     showMsg('master-err', 'Failed to add user. Please try again.', 'alert');
     console.error(e);
@@ -1171,6 +1254,7 @@ async function removeUserAccess(email) {
     accessData.admins   = accessData.admins.filter(e => e !== email);
     renderAccessList();
     toast(`${email} removed`, 'ok');
+    logAudit('access.remove', `Removed user ${email}`);
   } catch (e) { toast('Failed to remove user.', 'err'); console.error(e); }
 }
 
@@ -1185,6 +1269,7 @@ async function toggleAdminAccess(email) {
     else if (!accessData.admins.includes(email)) accessData.admins.push(email);
     renderAccessList();
     toast(`${email} ${isAdm ? 'is no longer admin' : 'is now admin'}`, 'ok');
+    logAudit('access.admin', `${isAdm ? 'Revoked admin from' : 'Granted admin to'} ${email}`);
   } catch (e) { toast('Failed to update admin status.', 'err'); console.error(e); }
 }
 
@@ -1260,9 +1345,11 @@ async function submitAddStock() {
     if (isReturn) {
       showMsg('add-ok', `Returned ${fmt(qty)} ${item.unit} of "${item.name}" to stock.`, 'check');
       toast(`+${fmt(qty)} ${item.unit} ${item.name} (returned)`, 'ok');
+      logAudit('tx.return', `Returned ${fmt(qty)} ${item.unit} of "${item.name}" from ${loc?.name || '—'}`);
     } else {
       showMsg('add-ok', `Added ${fmt(qty)} ${item.unit} of "${item.name}" to stock.`, 'check');
       toast(`+${fmt(qty)} ${item.unit} of ${item.name}`, 'ok');
+      logAudit('tx.in', `Stock in: ${fmt(qty)} ${item.unit} of "${item.name}" from ${supplier?.name || '—'}, bill ${billNo}`);
     }
   } catch (e) {
     showMsg('add-err','Failed to update stock. Please try again.','alert');
@@ -1288,6 +1375,7 @@ async function submitIssue() {
   const locationId = document.getElementById('issue-location').value;
   const toName     = document.getElementById('issue-to-name').value.trim();
   const toId       = document.getElementById('issue-to-id').value.trim();
+  const notes      = document.getElementById('issue-notes').value.trim();
 
   showMsg('issue-err',''); showMsg('issue-ok','');
 
@@ -1307,7 +1395,7 @@ async function submitIssue() {
     return;
   }
 
-  const confirmed = await showIssueConfirm({ item, qty, location, toName, toId });
+  const confirmed = await showIssueConfirm({ item, qty, location, toName, toId, notes });
   if (!confirmed) return;
 
   const btn = document.getElementById('issue-submit');
@@ -1323,7 +1411,7 @@ async function submitIssue() {
       tx.set(txRef, {
         type: 'out', itemId, itemName: item.name, quantity: qty, unit: item.unit,
         locationId, locationName: location.name,
-        issuedToName: toName, issuedToId: toId || '',
+        issuedToName: toName, issuedToId: toId || '', notes: notes || '',
         createdBy: currentUser.uid, createdByEmail: currentUser.email, createdAt: serverTimestamp()
       });
     });
@@ -1332,10 +1420,12 @@ async function submitIssue() {
     document.getElementById('issue-location').value = '';
     document.getElementById('issue-to-name').value = '';
     document.getElementById('issue-to-id').value = '';
+    document.getElementById('issue-notes').value = '';
     document.getElementById('issue-stock-hint').textContent = '';
     document.getElementById('issue-unit-hint').textContent  = '';
     showMsg('issue-ok', `Issued ${fmt(qty)} ${item.unit} of "${item.name}" to ${toName} at ${location.name}.`, 'check');
     toast(`−${fmt(qty)} ${item.unit} ${item.name} → ${toName}`, 'ok');
+    logAudit('tx.issue', `Issued ${fmt(qty)} ${item.unit} of "${item.name}" to ${toName}${toId ? ' ('+toId+')' : ''} at ${location.name}${notes ? ' — '+notes : ''}`);
   } catch (e) {
     if (e.message === 'Insufficient stock') {
       showMsg('issue-err','Insufficient stock — someone else may have updated it. Please refresh.','alert');
@@ -1347,7 +1437,7 @@ async function submitIssue() {
   btn.disabled = false;
 }
 
-function showIssueConfirm({ item, qty, location, toName, toId }) {
+function showIssueConfirm({ item, qty, location, toName, toId, notes }) {
   return new Promise(resolve => {
     document.getElementById('issue-confirm-body').innerHTML = `
       <table class="confirm-table">
@@ -1355,6 +1445,7 @@ function showIssueConfirm({ item, qty, location, toName, toId }) {
         <tr><td>Quantity</td><td><strong>${fmt(qty)} ${esc(item.unit)}</strong></td></tr>
         <tr><td>Location</td><td><strong>${esc(location.name)}</strong></td></tr>
         <tr><td>Issued to</td><td><strong>${esc(toName)}${toId ? ' (' + esc(toId) + ')' : ''}</strong></td></tr>
+        ${notes ? `<tr><td>Notes</td><td>${esc(notes)}</td></tr>` : ''}
         <tr><td>By</td><td>${esc(currentUser.email)}</td></tr>
       </table>`;
     const overlay = document.getElementById('issue-confirm-modal');
@@ -1402,6 +1493,8 @@ async function voidTransaction(origTx) {
       });
     });
     toast('Transaction voided.', 'ok');
+    const kindLabel = origTx.type === 'out' ? 'issue' : origTx.source === 'returned' ? 'return' : 'stock-in';
+    logAudit('tx.void', `Voided ${kindLabel}: ${fmt(origTx.quantity)} ${origTx.unit} of "${origTx.itemName}"`);
   } catch (e) {
     if (e.message === 'stock-negative') toast('Cannot void: reversing this would make stock negative.', 'err');
     else { toast('Failed to void transaction. Please try again.', 'err'); console.error(e); }
@@ -1420,6 +1513,7 @@ async function deleteTransaction(origTx) {
   try {
     await deleteDoc(doc(db, 'invTx', origTx.id));
     toast('Transaction deleted.', 'ok');
+    logAudit('tx.delete', `Hard deleted ${typeLabel}: ${fmt(origTx.quantity)} ${origTx.unit} of "${origTx.itemName || '—'}"`);
   } catch (e) {
     toast('Delete failed — Firestore rules may not allow deleting invTx documents.', 'err');
     console.error(e);

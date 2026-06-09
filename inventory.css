@@ -246,6 +246,7 @@ select.ms{
 .tx-meta{font-size:11.5px;color:var(--ink3);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px;}
 .tx-meta .ic{width:12px;height:12px;flex-shrink:0;color:var(--ink4);}
 .tx-by{font-size:11px;color:var(--ink4);font-weight:500;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tx-notes{font-size:11.5px;color:var(--ink3);font-weight:500;margin-top:2px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tx-right{flex-shrink:0;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
 .tx-qty-val{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;display:block;}
 .tx-qty-in{color:var(--greenD);}
@@ -407,6 +408,22 @@ select.ms{
   background:var(--surface3);color:var(--ink3);transition:all var(--ease);}
 .access-btn:hover{background:var(--surface2);}
 .access-btn.danger:hover{background:var(--redS);color:var(--redD);border-color:rgba(220,79,87,.3);}
+
+/* ── AUDIT LOG ── */
+.audit-list{display:flex;flex-direction:column;gap:6px;margin-top:12px;}
+.audit-row{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r10);}
+.audit-badge{flex-shrink:0;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:var(--rpill);
+  letter-spacing:.03em;white-space:nowrap;margin-top:1px;}
+.audit-item .audit-badge{background:var(--primaryS);color:var(--primary);border:1px solid var(--primaryB);}
+.audit-config .audit-badge{background:var(--amberS);color:var(--amberD);border:1px solid rgba(194,135,11,.2);}
+.audit-tx .audit-badge{background:var(--blueS);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
+.audit-access .audit-badge{background:var(--greenS);color:var(--greenD);border:1px solid rgba(15,157,110,.2);}
+.audit-other .audit-badge{background:var(--surface3);color:var(--ink3);border:1px solid var(--border);}
+.audit-info{flex:1;min-width:0;}
+.audit-detail{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.audit-by{font-size:11.5px;color:var(--ink4);font-weight:500;display:flex;align-items:center;gap:4px;margin-top:3px;}
+.audit-by .ic{width:12px;height:12px;}
 
 /* ── TOAST ── */
 .toast-container{position:fixed;bottom:calc(var(--tabbar-h) + 14px);left:50%;transform:translateX(-50%);

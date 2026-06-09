@@ -83,33 +83,35 @@
       <!-- ADD STOCK TAB -->
       <div class="tab-panel" id="tab-add">
         <div class="form-card">
-          <div class="section-title" style="margin-bottom:18px">Add Incoming Stock</div>
+          <div class="section-title" style="margin-bottom:16px">Add Incoming Stock</div>
           <div id="add-err" class="form-err"></div>
           <div id="add-ok"  class="form-ok"></div>
-          <div class="mf">
-            <label class="ml">Item</label>
-            <select class="ms" id="add-item"><option value="">Select item…</option></select>
+          <div class="field-row">
+            <div class="mf">
+              <label class="ml">Item</label>
+              <select class="ms" id="add-item"><option value="">Select item…</option></select>
+            </div>
+            <div class="mf">
+              <label class="ml">Quantity</label>
+              <input class="mi" id="add-qty" type="number" inputmode="decimal" min="0.001" step="any" placeholder="Enter quantity">
+              <div class="stock-hint" id="add-unit-hint"></div>
+            </div>
           </div>
-          <div class="mf">
-            <label class="ml">Quantity</label>
-            <input class="mi" id="add-qty" type="number" inputmode="decimal" min="0.001" step="any" placeholder="Enter quantity">
-            <div class="stock-hint" id="add-unit-hint"></div>
+          <div class="field-row">
+            <div class="mf">
+              <label class="ml">Source</label>
+              <select class="ms" id="add-supplier"><option value="">Select source…</option></select>
+            </div>
+            <div class="mf" id="add-bill-field">
+              <label class="ml">Bill / Invoice Number</label>
+              <input class="mi" id="add-bill" type="text" placeholder="e.g. INV-2024-001" maxlength="60">
+            </div>
+            <div class="mf hidden" id="add-return-field">
+              <label class="ml">Returned From</label>
+              <select class="ms" id="add-return-loc"><option value="">Select location…</option></select>
+            </div>
           </div>
-          <div class="mf">
-            <label class="ml">Source</label>
-            <select class="ms" id="add-supplier"><option value="">Select source…</option></select>
-          </div>
-          <!-- Supplier delivery: bill -->
-          <div class="mf" id="add-bill-field">
-            <label class="ml">Bill / Invoice Number</label>
-            <input class="mi" id="add-bill" type="text" placeholder="e.g. INV-2024-001" maxlength="60">
-          </div>
-          <!-- Returned: where it came back from -->
-          <div class="mf hidden" id="add-return-field">
-            <label class="ml">Returned From <span class="opt">(location where it was used)</span></label>
-            <select class="ms" id="add-return-loc"><option value="">Select location…</option></select>
-          </div>
-          <button class="btn btn-primary btn-wide" id="add-submit" style="margin-top:4px">
+          <button class="btn btn-primary btn-wide" id="add-submit">
             <span data-ic="check"></span>Add to Stock
           </button>
         </div>
@@ -118,34 +120,39 @@
       <!-- ISSUE ITEM TAB -->
       <div class="tab-panel" id="tab-issue">
         <div class="form-card">
-          <div class="section-title" style="margin-bottom:18px">Issue Item</div>
+          <div class="section-title" style="margin-bottom:16px">Issue Item</div>
           <div id="issue-err" class="form-err"></div>
           <div id="issue-ok"  class="form-ok"></div>
-          <div class="mf">
-            <label class="ml">Item</label>
-            <select class="ms" id="issue-item"><option value="">Select item…</option></select>
-            <div class="stock-hint" id="issue-stock-hint"></div>
-          </div>
-          <div class="mf">
-            <label class="ml">Quantity</label>
-            <input class="mi" id="issue-qty" type="number" inputmode="decimal" min="0.001" step="any" placeholder="Enter quantity">
-            <div class="stock-hint" id="issue-unit-hint"></div>
-          </div>
-          <div class="mf">
-            <label class="ml">Location <span class="opt">(where item will be used)</span></label>
-            <select class="ms" id="issue-location"><option value="">Select location…</option></select>
+          <div class="field-row">
+            <div class="mf">
+              <label class="ml">Item</label>
+              <select class="ms" id="issue-item"><option value="">Select item…</option></select>
+              <div class="stock-hint" id="issue-stock-hint"></div>
+            </div>
+            <div class="mf">
+              <label class="ml">Quantity</label>
+              <input class="mi" id="issue-qty" type="number" inputmode="decimal" min="0.001" step="any" placeholder="Enter quantity">
+              <div class="stock-hint" id="issue-unit-hint"></div>
+            </div>
           </div>
           <div class="field-row">
+            <div class="mf">
+              <label class="ml">Location <span class="opt">(where item will be used)</span></label>
+              <select class="ms" id="issue-location"><option value="">Select location…</option></select>
+            </div>
             <div class="mf">
               <label class="ml">Issued To — Name</label>
               <input class="mi" id="issue-to-name" type="text" placeholder="Recipient name" maxlength="60">
             </div>
+          </div>
+          <div class="field-row">
             <div class="mf">
-              <label class="ml">Issued To — ID <span class="opt">(optional)</span></label>
+              <label class="ml">Employee ID <span class="opt">(optional)</span></label>
               <input class="mi" id="issue-to-id" type="text" placeholder="Employee / staff ID" maxlength="40">
             </div>
+            <div></div>
           </div>
-          <button class="btn btn-primary btn-wide" id="issue-submit" style="margin-top:4px">
+          <button class="btn btn-primary btn-wide" id="issue-submit">
             <span data-ic="issue"></span>Issue Item
           </button>
         </div>

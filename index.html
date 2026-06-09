@@ -872,12 +872,16 @@ function renderHistory() {
         <span class="tx-qty-val ${isVoidEntry ? 'tx-qty-void' : qtyCls}">${sign}${fmt(tx.quantity)}</span>
         <span class="tx-unit">${esc(tx.unit || '')}</span>
         ${!isVoidEntry && !isVoided ? `<button class="void-btn">${window.icon('x')}Void</button>` : ''}
+        ${isAdmin ? `<button class="void-btn tx-del-btn" title="Hard delete">${window.icon('trash')}</button>` : ''}
         <span class="tx-time">${relTime(ts)}</span>
       </div>`;
     list.appendChild(row);
 
     if (!isVoidEntry && !isVoided) {
       row.querySelector('.void-btn').addEventListener('click', () => voidTransaction(tx));
+    }
+    if (isAdmin) {
+      row.querySelector('.tx-del-btn').addEventListener('click', () => deleteTransaction(tx));
     }
   });
 }
@@ -1232,33 +1236,57 @@ function showIssueConfirm({ item, qty, location, toName, toId }) {
 }
 
 async function voidTransaction(origTx) {
-  // Guard: check in-memory (allTx is real-time so this is always current)
   if (allTx.some(t => t.type === 'void' && t.voidOfId === origTx.id)) {
     toast('This transaction was already voided.', 'err'); return;
   }
   const confirmed = await showVoidConfirm(origTx);
   if (!confirmed) return;
   try {
-    const itemRef = doc(db, 'invItems', origTx.itemId);
+    const itemRef = origTx.itemId ? doc(db, 'invItems', origTx.itemId) : null;
     await runTransaction(db, async tx => {
-      const itemSnap = await tx.get(itemRef);
-      const cur      = itemSnap.exists() ? (itemSnap.data()?.currentStock || 0) : 0;
-      const delta    = origTx.type === 'out' ? origTx.quantity : -origTx.quantity;
-      const newStock = cur + delta;
-      if (newStock < 0) throw new Error('stock-negative');
-      tx.update(itemRef, { currentStock: newStock });
+      let stockRestored = false;
+      if (itemRef) {
+        const itemSnap = await tx.get(itemRef);
+        if (itemSnap.exists()) {
+          const cur      = itemSnap.data()?.currentStock || 0;
+          const delta    = origTx.type === 'out' ? origTx.quantity : -origTx.quantity;
+          const newStock = cur + delta;
+          if (newStock < 0) throw new Error('stock-negative');
+          tx.update(itemRef, { currentStock: newStock });
+          stockRestored = true;
+        }
+      }
       const newTxRef = doc(collection(db, 'invTx'));
       tx.set(newTxRef, {
         type: 'void', voidOfId: origTx.id,
-        itemId: origTx.itemId, itemName: origTx.itemName,
+        itemId: origTx.itemId || '', itemName: origTx.itemName,
         quantity: origTx.quantity, unit: origTx.unit, origType: origTx.type,
+        stockRestored,
         createdBy: currentUser.uid, createdByEmail: currentUser.email, createdAt: serverTimestamp()
       });
     });
-    toast('Transaction voided — stock restored.', 'ok');
+    toast('Transaction voided.', 'ok');
   } catch (e) {
     if (e.message === 'stock-negative') toast('Cannot void: reversing this would make stock negative.', 'err');
     else { toast('Failed to void transaction. Please try again.', 'err'); console.error(e); }
+  }
+}
+
+async function deleteTransaction(origTx) {
+  const typeLabel = origTx.type === 'out' ? 'issue' : origTx.source === 'returned' ? 'return' : origTx.type === 'void' ? 'reversal' : 'stock-in';
+  const ok = await stcConfirm({
+    title: 'Delete transaction?',
+    body: `Permanently delete this <strong>${typeLabel}</strong> record for <strong>${esc(origTx.itemName || '—')}</strong>. Stock is <em>not</em> adjusted.`,
+    warn: 'Hard delete — record will be gone permanently. Use Void to keep an audit trail instead.',
+    confirmLabel: 'Delete permanently',
+  });
+  if (!ok) return;
+  try {
+    await deleteDoc(doc(db, 'invTx', origTx.id));
+    toast('Transaction deleted.', 'ok');
+  } catch (e) {
+    toast('Delete failed — Firestore rules may not allow deleting invTx documents.', 'err');
+    console.error(e);
   }
 }
 

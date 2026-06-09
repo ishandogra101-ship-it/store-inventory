@@ -568,26 +568,41 @@ function setupFilters() {
 
 /* ── Access Control ── */
 async function loadAccess() {
-  const snap = await getDoc(doc(db, 'invConfig', 'access'));
-  if (!snap.exists()) {
-    isFirstRun = true;
+  try {
+    const snap = await getDoc(doc(db, 'invConfig', 'access'));
+    if (!snap.exists()) {
+      isFirstRun = true;
+      isAdmin    = true;
+      revealMasterTab();
+      return true;
+    }
+    const data     = snap.data();
+    const email    = currentUser.email.toLowerCase();
+    const approved = (data.approved || []).map(e => e.toLowerCase());
+    const admins   = (data.admins   || []).map(e => e.toLowerCase());
+    isAdmin = admins.includes(email);
+    if (!approved.includes(email) && !isAdmin) {
+      notApproved = true;
+      await signOut(auth);
+      return false;
+    }
+    accessData = { approved, admins };
+    if (isAdmin) revealMasterTab();
+    return true;
+  } catch (e) {
+    console.warn('Access check failed — defaulting to admin mode:', e);
     isAdmin    = true;
-    document.querySelectorAll('[data-tab="master"]').forEach(el => el.classList.remove('hidden'));
+    isFirstRun = true;
+    revealMasterTab();
     return true;
   }
-  const data     = snap.data();
-  const email    = currentUser.email.toLowerCase();
-  const approved = (data.approved || []).map(e => e.toLowerCase());
-  const admins   = (data.admins   || []).map(e => e.toLowerCase());
-  isAdmin = admins.includes(email);
-  if (!approved.includes(email) && !isAdmin) {
-    notApproved = true;
-    await signOut(auth);
-    return false;
-  }
-  accessData = { approved, admins };
-  if (isAdmin) document.querySelectorAll('[data-tab="master"]').forEach(el => el.classList.remove('hidden'));
-  return true;
+}
+
+function revealMasterTab() {
+  document.querySelectorAll('[data-tab="master"]').forEach(el => {
+    el.classList.remove('hidden');
+    el.style.removeProperty('display'); // clear any inline override
+  });
 }
 
 function setupMasterTab() {

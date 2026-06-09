@@ -40,6 +40,7 @@
       <button class="seg-btn" data-tab="add"><span data-ic="plus"></span>Add Stock</button>
       <button class="seg-btn" data-tab="issue"><span data-ic="issue"></span>Issue Item</button>
       <button class="seg-btn" data-tab="history"><span data-ic="history"></span>History</button>
+      <button class="seg-btn hidden" data-tab="master"><span data-ic="shield"></span>Master</button>
     </div>
   </div>
 
@@ -178,6 +179,41 @@
         </div>
       </div>
 
+      <!-- MASTER TAB -->
+      <div class="tab-panel" id="tab-master">
+        <div class="section-header">
+          <div class="section-title">Access Control</div>
+          <span class="section-meta" id="master-meta"></span>
+        </div>
+
+        <div class="master-notice hidden" id="master-firstrun">
+          <span data-ic="alert"></span>
+          <span>Access control is not set up yet — any <strong>@maruti.co.in</strong> account can sign in. Add users below to enable restrictions. You are automatically added as admin.</span>
+        </div>
+
+        <div class="form-card" style="margin-top:16px;margin-bottom:20px">
+          <div class="section-title" style="margin-bottom:16px;font-size:15px">Add User</div>
+          <div id="master-err" class="form-err"></div>
+          <div id="master-ok"  class="form-ok"></div>
+          <div class="field-row">
+            <div class="mf">
+              <label class="ml">Email</label>
+              <input class="mi" id="master-email" type="email" placeholder="staff@maruti.co.in">
+            </div>
+            <div class="mf" style="display:flex;align-items:flex-end;gap:10px">
+              <label class="master-check-label">
+                <input type="checkbox" id="master-is-admin"> Make admin
+              </label>
+              <button class="btn btn-primary" id="master-add-btn" style="flex:1">
+                <span data-ic="plus"></span>Add User
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="master-list"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -188,6 +224,7 @@
   <button class="mob-tab" data-tab="add"><span data-ic="plus"></span>Add</button>
   <button class="mob-tab" data-tab="issue"><span data-ic="issue"></span>Issue</button>
   <button class="mob-tab" data-tab="history"><span data-ic="history"></span>History</button>
+  <button class="mob-tab hidden" data-tab="master"><span data-ic="shield"></span>Master</button>
 </div>
 
 <div class="toast-container" id="toast-container"></div>
@@ -221,7 +258,8 @@
 import { initializeApp }                                      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signOut }               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, doc, getDoc,
-         getDocs, addDoc, onSnapshot, runTransaction,
+         getDocs, addDoc, onSnapshot, runTransaction, setDoc, updateDoc,
+         arrayUnion, arrayRemove,
          serverTimestamp, query, orderBy, limit }             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 /* hydrate static icons */
@@ -233,17 +271,21 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 const RETURNED = '__returned__';
-let currentUser  = null;
-let items        = [];
-let suppliers    = [];
-let locations    = [];
-let allTx        = [];
+let currentUser   = null;
+let items         = [];
+let suppliers     = [];
+let locations     = [];
+let allTx         = [];
 let currentFilter = 'all';
-let searchTerm   = '';
+let searchTerm    = '';
+let isAdmin       = false;
+let isFirstRun    = false;
+let accessData    = { approved: [], admins: [] };
+let notApproved   = false;
 
 /* ── Auth ── */
 onAuthStateChanged(auth, user => {
-  if (!user) { window.location.href = 'login/'; return; }
+  if (!user) { window.location.href = notApproved ? 'login/?notapproved=1' : 'login/'; return; }
   currentUser = user;
   document.getElementById('nav-user').textContent = user.email;
   document.getElementById('loading').classList.add('gone');
@@ -281,6 +323,8 @@ function showMsg(id, msg, isIcon) {
 
 /* ── Init ── */
 async function initApp() {
+  const ok = await loadAccess();
+  if (!ok) return;
   await loadConfig();
   listenItems();
   listenHistory();
@@ -288,6 +332,7 @@ async function initApp() {
   setupIssueForm();
   setupFilters();
   setupSearch();
+  if (isAdmin) setupMasterTab();
 }
 
 /* ── Config (suppliers + locations) ── */
@@ -521,6 +566,146 @@ function setupFilters() {
   });
 }
 
+/* ── Access Control ── */
+async function loadAccess() {
+  const snap = await getDoc(doc(db, 'invConfig', 'access'));
+  if (!snap.exists()) {
+    isFirstRun = true;
+    isAdmin    = true;
+    document.querySelectorAll('[data-tab="master"]').forEach(el => el.classList.remove('hidden'));
+    return true;
+  }
+  const data     = snap.data();
+  const email    = currentUser.email.toLowerCase();
+  const approved = (data.approved || []).map(e => e.toLowerCase());
+  const admins   = (data.admins   || []).map(e => e.toLowerCase());
+  isAdmin = admins.includes(email);
+  if (!approved.includes(email) && !isAdmin) {
+    notApproved = true;
+    await signOut(auth);
+    return false;
+  }
+  accessData = { approved, admins };
+  if (isAdmin) document.querySelectorAll('[data-tab="master"]').forEach(el => el.classList.remove('hidden'));
+  return true;
+}
+
+function setupMasterTab() {
+  if (isFirstRun) document.getElementById('master-firstrun').classList.remove('hidden');
+  renderAccessList();
+  document.getElementById('master-add-btn').addEventListener('click', addUserAccess);
+  document.getElementById('master-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('master-add-btn').click();
+  });
+}
+
+function renderAccessList() {
+  const list = document.getElementById('master-list');
+  const meta = document.getElementById('master-meta');
+  if (!list) return;
+  const all = [...new Set([...accessData.admins, ...accessData.approved])];
+  meta.textContent = all.length ? `${all.length} user${all.length !== 1 ? 's' : ''}` : '';
+  list.innerHTML = '';
+  if (!all.length) {
+    list.innerHTML = `<div class="empty-state" style="padding-top:32px">
+      <div class="empty-state-ico">${window.icon('user')}</div>
+      <div class="empty-state-text">No users yet</div>
+      <div class="empty-state-sub">Add the first approved user above.</div>
+    </div>`;
+    return;
+  }
+  all.forEach(email => {
+    const isAdm = accessData.admins.includes(email);
+    const isMe  = email === currentUser.email.toLowerCase();
+    const item  = document.createElement('div');
+    item.className = 'access-item';
+    item.innerHTML = `
+      <div class="access-email">${esc(email)}${isMe ? '<span class="access-you">(you)</span>' : ''}</div>
+      <span class="access-badge ${isAdm ? 'access-badge-admin' : 'access-badge-user'}">${isAdm ? 'Admin' : 'User'}</span>
+      <div class="access-actions">
+        ${!isMe ? `<button class="access-btn" data-action="toggle" data-email="${esc(email)}">${isAdm ? 'Remove admin' : 'Make admin'}</button>` : ''}
+        ${!isMe ? `<button class="access-btn danger" data-action="remove" data-email="${esc(email)}">Remove</button>` : ''}
+      </div>`;
+    list.appendChild(item);
+  });
+  list.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const e = btn.dataset.email;
+      if (btn.dataset.action === 'remove') removeUserAccess(e);
+      else                                 toggleAdminAccess(e);
+    });
+  });
+}
+
+async function addUserAccess() {
+  const emailRaw = document.getElementById('master-email').value.trim().toLowerCase();
+  const makeAdm  = document.getElementById('master-is-admin').checked;
+  showMsg('master-err', ''); showMsg('master-ok', '');
+  if (!emailRaw) { showMsg('master-err', 'Please enter an email address.', 'alert'); return; }
+  if (!/^[^\s@]+@maruti\.co\.in$/i.test(emailRaw)) { showMsg('master-err', 'Only @maruti.co.in addresses are allowed.', 'alert'); return; }
+  const all = [...new Set([...accessData.admins, ...accessData.approved])];
+  if (all.includes(emailRaw)) { showMsg('master-err', 'This user is already added.', 'alert'); return; }
+  const btn = document.getElementById('master-add-btn');
+  btn.disabled = true;
+  try {
+    const ref       = doc(db, 'invConfig', 'access');
+    const selfEmail = currentUser.email.toLowerCase();
+    if (isFirstRun) {
+      const newApproved = [selfEmail, emailRaw];
+      const newAdmins   = makeAdm ? [selfEmail, emailRaw] : [selfEmail];
+      await setDoc(ref, { approved: newApproved, admins: newAdmins });
+      accessData = { approved: newApproved, admins: newAdmins };
+      isFirstRun = false;
+      document.getElementById('master-firstrun').classList.add('hidden');
+    } else {
+      const updates = { approved: arrayUnion(emailRaw) };
+      if (makeAdm) updates.admins = arrayUnion(emailRaw);
+      await updateDoc(ref, updates);
+      if (!accessData.approved.includes(emailRaw)) accessData.approved.push(emailRaw);
+      if (makeAdm && !accessData.admins.includes(emailRaw)) accessData.admins.push(emailRaw);
+    }
+    document.getElementById('master-email').value = '';
+    document.getElementById('master-is-admin').checked = false;
+    renderAccessList();
+    showMsg('master-ok', `${emailRaw} has been added.`, 'check');
+    toast(`${emailRaw} added`, 'ok');
+  } catch (e) {
+    showMsg('master-err', 'Failed to add user. Please try again.', 'alert');
+    console.error(e);
+  }
+  btn.disabled = false;
+}
+
+async function removeUserAccess(email) {
+  if (accessData.admins.includes(email) && accessData.admins.length === 1) {
+    toast('Cannot remove the only admin.', 'err'); return;
+  }
+  try {
+    await updateDoc(doc(db, 'invConfig', 'access'), {
+      approved: arrayRemove(email),
+      admins:   arrayRemove(email)
+    });
+    accessData.approved = accessData.approved.filter(e => e !== email);
+    accessData.admins   = accessData.admins.filter(e => e !== email);
+    renderAccessList();
+    toast(`${email} removed`, 'ok');
+  } catch (e) { toast('Failed to remove user.', 'err'); console.error(e); }
+}
+
+async function toggleAdminAccess(email) {
+  const isAdm = accessData.admins.includes(email);
+  if (isAdm && accessData.admins.length === 1) { toast('Cannot remove the only admin.', 'err'); return; }
+  try {
+    await updateDoc(doc(db, 'invConfig', 'access'), {
+      admins: isAdm ? arrayRemove(email) : arrayUnion(email)
+    });
+    if (isAdm) accessData.admins = accessData.admins.filter(e => e !== email);
+    else if (!accessData.admins.includes(email)) accessData.admins.push(email);
+    renderAccessList();
+    toast(`${email} ${isAdm ? 'is no longer admin' : 'is now admin'}`, 'ok');
+  } catch (e) { toast('Failed to update admin status.', 'err'); console.error(e); }
+}
+
 /* ── ADD STOCK ── */
 function setupAddForm() {
   document.getElementById('add-item').addEventListener('change', updateAddUnitHint);
@@ -711,7 +896,8 @@ async function voidTransaction(origTx) {
     const itemRef   = doc(db, 'invItems', origTx.itemId);
     const origTxRef = doc(db, 'invTx', origTx.id);
     await runTransaction(db, async tx => {
-      const [origSnap, itemSnap] = await Promise.all([tx.get(origTxRef), tx.get(itemRef)]);
+      const origSnap = await tx.get(origTxRef);
+      const itemSnap = await tx.get(itemRef);
       if (origSnap.data()?.voided) throw new Error('already-voided');
       const cur      = itemSnap.data()?.currentStock || 0;
       const delta    = origTx.type === 'out' ? origTx.quantity : -origTx.quantity;

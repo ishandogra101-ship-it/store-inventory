@@ -98,6 +98,10 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, user => { if (user) window.location.href = '../'; });
 
+if (new URLSearchParams(location.search).get('notapproved')) {
+  showErr('signin-err', 'Your account is not approved. Contact your administrator.');
+}
+
 function isMarutiEmail(e) { return /^[^\s@]+@maruti\.co\.in$/i.test(e); }
 
 function showErr(id, msg) {

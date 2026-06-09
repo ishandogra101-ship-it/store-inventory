@@ -3,13 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<title>Store Inventory — Stats</title>
+<title>Store Inventory — Statistics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="inventory.css">
 <script src="firebase-config.js"></script>
+<script src="icons.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="handbook.js"></script>
 </head>
 <body>
 
@@ -17,95 +20,108 @@
 
 <div class="app-layout" id="app" style="display:none">
 
-  <nav class="sidebar">
-    <div class="sb-brand">
-      <div class="brand-icon">📦</div>
-      <div class="sb-name">Inventory</div>
+  <header class="appbar">
+    <div class="brand">
+      <span class="brand-mark" data-ic="box"></span>
+      <span class="brand-name">Store <span>Inventory</span></span>
     </div>
-    <div class="sb-nav">
-      <a href="index.html" class="sb-link"><span class="sb-icon">📦</span><span>Stock</span></a>
-      <a href="stats.html" class="sb-link active"><span class="sb-icon">📊</span><span>Stats</span></a>
-      <a href="settings.html" class="sb-link"><span class="sb-icon">⚙️</span><span>Settings</span></a>
-    </div>
-    <div class="sb-footer">
-      <div class="sb-user" id="sb-user"></div>
-      <button class="sb-logout" id="sb-logout"><span>↩</span><span>Sign out</span></button>
-    </div>
-  </nav>
+    <nav class="nav">
+      <span class="nav-user" id="nav-user"></span>
+      <a href="index.html"    class="icon-btn"        data-ic="box"      title="Stock"></a>
+      <a href="stats.html"    class="icon-btn active" data-ic="chart"    title="Statistics"></a>
+      <a href="settings.html" class="icon-btn"        data-ic="settings" title="Settings"></a>
+      <button class="icon-btn" id="export-btn"   data-ic="download" title="Export to Excel"></button>
+      <button class="icon-btn" id="handbook-btn" data-ic="book"     title="Download handbook (PDF)"></button>
+      <span class="nav-sep"></span>
+      <button class="icon-btn danger" id="logout-btn" data-ic="logout" title="Sign out"></button>
+    </nav>
+  </header>
 
-  <div class="main-area">
-    <header class="topbar">
-      <div class="topbar-title">Statistics</div>
-      <div class="topbar-right">
-        <button class="export-btn" id="export-btn">⬇ Export Excel</button>
-        <button class="icon-btn" id="topbar-logout" title="Sign out">↩</button>
+  <div class="content-scroll">
+    <div class="content-inner">
+
+      <div class="section-header">
+        <div class="section-title">Overview</div>
+        <button class="btn btn-ghost" id="export-btn2"><span data-ic="download"></span>Export Excel</button>
       </div>
-    </header>
 
-    <div class="content-scroll">
-      <div class="content-inner">
-
-        <!-- KPI CARDS -->
-        <div class="kpi-grid" id="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-label">Total Items</div>
-            <div class="kpi-value" id="kpi-items">—</div>
-            <div class="kpi-sub">tracked products</div>
-          </div>
-          <div class="kpi-card kpi-accent-green">
-            <div class="kpi-label">Total Received</div>
-            <div class="kpi-value" id="kpi-in">—</div>
-            <div class="kpi-sub">all-time stock in</div>
-          </div>
-          <div class="kpi-card kpi-accent-amber">
-            <div class="kpi-label">Total Issued</div>
-            <div class="kpi-value" id="kpi-out">—</div>
-            <div class="kpi-sub">all-time stock out</div>
-          </div>
-          <div class="kpi-card kpi-accent-primary">
-            <div class="kpi-label">Transactions</div>
-            <div class="kpi-value" id="kpi-tx">—</div>
-            <div class="kpi-sub">total records</div>
-          </div>
-          <div class="kpi-card kpi-accent-violet">
-            <div class="kpi-label">Active Locations</div>
-            <div class="kpi-value" id="kpi-locs">—</div>
-            <div class="kpi-sub">used in issues</div>
-          </div>
-          <div class="kpi-card kpi-accent-amber" style="--amberD:#b45309">
-            <div class="kpi-label">Out-of-Stock Items</div>
-            <div class="kpi-value" id="kpi-oos">—</div>
-            <div class="kpi-sub">need restocking</div>
-          </div>
+      <!-- KPI CARDS -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-top"><div class="kpi-label">Total Items</div><div class="kpi-ico" data-ic="box"></div></div>
+          <div class="kpi-value" id="kpi-items">—</div><div class="kpi-sub">tracked products</div>
         </div>
-
-        <!-- CHARTS -->
-        <div class="charts-grid">
-          <div class="chart-card" style="grid-column:1/-1">
-            <div class="chart-card-title">Stock movements — last 30 days</div>
-            <canvas id="chart-timeline"></canvas>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-title">Top items by usage (issued qty)</div>
-            <canvas id="chart-items"></canvas>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-title">Issues by location</div>
-            <canvas id="chart-locations"></canvas>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-title">Received by supplier</div>
-            <canvas id="chart-suppliers"></canvas>
-          </div>
-          <div class="chart-card">
-            <div class="chart-card-title">Current stock levels</div>
-            <canvas id="chart-stock"></canvas>
-          </div>
+        <div class="kpi-card kpi-green">
+          <div class="kpi-top"><div class="kpi-label">Total Received</div><div class="kpi-ico" data-ic="down"></div></div>
+          <div class="kpi-value" id="kpi-in">—</div><div class="kpi-sub">from suppliers</div>
         </div>
-
+        <div class="kpi-card kpi-amber">
+          <div class="kpi-top"><div class="kpi-label">Total Issued</div><div class="kpi-ico" data-ic="issue"></div></div>
+          <div class="kpi-value" id="kpi-out">—</div><div class="kpi-sub">all-time stock out</div>
+        </div>
+        <div class="kpi-card kpi-blue">
+          <div class="kpi-top"><div class="kpi-label">Returned</div><div class="kpi-ico" data-ic="ret"></div></div>
+          <div class="kpi-value" id="kpi-ret">—</div><div class="kpi-sub">unused, returned</div>
+        </div>
+        <div class="kpi-card kpi-amber">
+          <div class="kpi-top"><div class="kpi-label">Low Stock</div><div class="kpi-ico" data-ic="alert"></div></div>
+          <div class="kpi-value" id="kpi-low">—</div><div class="kpi-sub">at/below threshold</div>
+        </div>
+        <div class="kpi-card kpi-red">
+          <div class="kpi-top"><div class="kpi-label">Out of Stock</div><div class="kpi-ico" data-ic="alert"></div></div>
+          <div class="kpi-value" id="kpi-oos">—</div><div class="kpi-sub">need restocking</div>
+        </div>
+        <div class="kpi-card kpi-primary">
+          <div class="kpi-top"><div class="kpi-label">Transactions</div><div class="kpi-ico" data-ic="history"></div></div>
+          <div class="kpi-value" id="kpi-tx">—</div><div class="kpi-sub">total records</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top"><div class="kpi-label">Locations</div><div class="kpi-ico" data-ic="pin"></div></div>
+          <div class="kpi-value" id="kpi-locs">—</div><div class="kpi-sub">used in issues</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top"><div class="kpi-label">People</div><div class="kpi-ico" data-ic="user"></div></div>
+          <div class="kpi-value" id="kpi-people">—</div><div class="kpi-sub">issued to</div>
+        </div>
       </div>
+
+      <!-- CHARTS -->
+      <div class="charts-grid">
+        <div class="chart-card" style="grid-column:1/-1">
+          <div class="chart-card-title"><span data-ic="chart"></span>Stock movements — last 30 days</div>
+          <canvas id="chart-timeline"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title"><span data-ic="box"></span>Top items by usage</div>
+          <canvas id="chart-items"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title"><span data-ic="pin"></span>Issues by location</div>
+          <canvas id="chart-locations"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title"><span data-ic="user"></span>Issues by person</div>
+          <canvas id="chart-people"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title"><span data-ic="truck"></span>Received by supplier</div>
+          <canvas id="chart-suppliers"></canvas>
+        </div>
+        <div class="chart-card" style="grid-column:1/-1">
+          <div class="chart-card-title"><span data-ic="layers"></span>Current stock levels</div>
+          <canvas id="chart-stock"></canvas>
+        </div>
+      </div>
+
     </div>
   </div>
+</div>
+
+<!-- Mobile bottom tab bar -->
+<div class="mobile-tab-bar">
+  <a href="index.html"    class="mob-tab"        style="text-decoration:none"><span data-ic="box"></span>Stock</a>
+  <a href="stats.html"    class="mob-tab active" style="text-decoration:none"><span data-ic="chart"></span>Stats</a>
+  <a href="settings.html" class="mob-tab"        style="text-decoration:none"><span data-ic="settings"></span>Settings</a>
 </div>
 
 <div class="toast-container" id="toast-container"></div>
@@ -116,60 +132,71 @@ import { getAuth, onAuthStateChanged, signOut }   from 'https://www.gstatic.com/
 import { getFirestore, collection, getDocs,
          query, orderBy }                         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
+document.querySelectorAll('[data-ic]').forEach(el => el.innerHTML = window.icon(el.dataset.ic));
+
 const app  = initializeApp(window.FIREBASE_CONFIG);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-/* ── Design tokens for charts ── */
+let itemsCache = [], locationsCount = 0;
+
 const C = {
-  green:  '#10b981', greenL: 'rgba(16,185,129,.15)',
-  amber:  '#f59e0b', amberL: 'rgba(245,158,11,.15)',
-  blue:   '#5b5bf5', blueL:  'rgba(91,91,245,.15)',
-  ink:    '#15162b', ink3:   '#73769e',
-  border: '#e6e8f6', paper:  '#eef0fb',
-  palette: ['#5b5bf5','#10b981','#f59e0b','#f43f5e','#9333ea','#0ea5e9','#3b82f6','#d946ef'],
+  green:'#0f9d6e', greenL:'rgba(15,157,110,.14)',
+  amber:'#c2870b', amberL:'rgba(194,135,11,.14)',
+  blue:'#3b82f6',  blueL:'rgba(59,130,246,.14)',
+  primary:'#4f46e5', ink3:'#646882', border:'#e4e7ef',
+  palette:['#4f46e5','#0f9d6e','#c2870b','#dc4f57','#3b82f6','#8b5cf6','#0ea5e9','#db2777'],
 };
-
-const chartDefaults = {
-  plugins: { legend: { display: false } },
-  scales: {
-    x: { grid: { color: C.border }, ticks: { color: C.ink3, font: { family:'Plus Jakarta Sans', size:11 } } },
-    y: { grid: { color: C.border }, ticks: { color: C.ink3, font: { family:'Plus Jakarta Sans', size:11 } } },
-  },
-  font: { family:'Plus Jakarta Sans' },
+const axes = {
+  x:{ grid:{ color:C.border }, ticks:{ color:C.ink3, font:{ family:'Plus Jakarta Sans', size:11 } } },
+  y:{ grid:{ color:C.border }, ticks:{ color:C.ink3, font:{ family:'Plus Jakarta Sans', size:11 } } },
 };
-
 Chart.defaults.font.family = 'Plus Jakarta Sans';
 
 /* ── Auth ── */
 onAuthStateChanged(auth, user => {
   if (!user) { window.location.href = 'login.html'; return; }
-  document.getElementById('sb-user').textContent = user.email;
+  document.getElementById('nav-user').textContent = user.email;
   loadData();
 });
-document.getElementById('sb-logout').addEventListener('click', () => signOut(auth).then(() => window.location.href='login.html'));
-document.getElementById('topbar-logout').addEventListener('click', () => signOut(auth).then(() => window.location.href='login.html'));
+document.getElementById('logout-btn').addEventListener('click', () => signOut(auth).then(() => window.location.href='login.html'));
+document.getElementById('handbook-btn').addEventListener('click', () => {
+  try { window.generateHandbook({ itemCount: itemsCache.length, locationCount: locationsCount }); toast('Handbook downloaded.', 'ok'); }
+  catch (e) { console.error(e); toast('Could not generate handbook.', 'err'); }
+});
 
-/* ── Toast ── */
 function toast(msg, type='') {
   const c = document.getElementById('toast-container');
   const t = document.createElement('div');
   t.className = 'toast' + (type ? ' toast-'+type : '');
-  t.textContent = msg;
+  t.innerHTML = (type === 'ok' ? window.icon('check') : type === 'err' ? window.icon('alert') : '') + `<span>${esc(msg)}</span>`;
   c.appendChild(t);
   setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 2800);
 }
 
-/* ── Load data ── */
+/* status helper */
+function stockStatus(item) {
+  const s = item.currentStock || 0, thr = item.minThreshold || 0;
+  if (s <= 0) return 'zero';
+  if (thr > 0) return s <= thr ? 'low' : 'ok';
+  return s < 10 ? 'low' : 'ok';
+}
+const isReturn = t => t.type === 'in' && t.source === 'returned';
+const isSupplyIn = t => t.type === 'in' && t.source !== 'returned';
+
+/* ── Load ── */
 async function loadData() {
   try {
-    const [txSnap, itemSnap] = await Promise.all([
+    const [txSnap, itemSnap, locSnap] = await Promise.all([
       getDocs(query(collection(db,'invTx'), orderBy('createdAt','desc'))),
       getDocs(collection(db,'invItems')),
+      getDocs(collection(db,'invConfig')),
     ]);
-
     const txs   = txSnap.docs.map(d => ({ id:d.id, ...d.data() }));
     const items = itemSnap.docs.map(d => ({ id:d.id, ...d.data() }));
+    itemsCache = items;
+    const locDoc = locSnap.docs.find(d => d.id === 'locations');
+    locationsCount = locDoc ? (locDoc.data().items || []).length : 0;
 
     document.getElementById('loading').classList.add('gone');
     document.getElementById('app').style.display = 'flex';
@@ -178,6 +205,7 @@ async function loadData() {
     renderTimeline(txs);
     renderTopItems(txs);
     renderByLocation(txs);
+    renderByPerson(txs);
     renderBySupplier(txs);
     renderStockLevels(items);
     setupExport(txs, items);
@@ -191,258 +219,176 @@ async function loadData() {
 
 /* ── KPIs ── */
 function renderKPIs(txs, items) {
-  const inTxs  = txs.filter(t => t.type === 'in');
-  const outTxs = txs.filter(t => t.type === 'out');
-  const totalIn  = inTxs.reduce((s,t) => s + (t.quantity||0), 0);
-  const totalOut = outTxs.reduce((s,t) => s + (t.quantity||0), 0);
-  const activeLocs = new Set(outTxs.map(t => t.locationId)).size;
-  const oos = items.filter(i => (i.currentStock||0) === 0).length;
+  const totalIn  = txs.filter(isSupplyIn).reduce((s,t)=>s+(t.quantity||0),0);
+  const totalOut = txs.filter(t=>t.type==='out').reduce((s,t)=>s+(t.quantity||0),0);
+  const totalRet = txs.filter(isReturn).reduce((s,t)=>s+(t.quantity||0),0);
+  const activeLocs = new Set(txs.filter(t=>t.type==='out').map(t=>t.locationId)).size;
+  const people = new Set(txs.filter(t=>t.type==='out' && t.issuedToName).map(t=>t.issuedToName.trim().toLowerCase())).size;
+  const low = items.filter(i => stockStatus(i)==='low').length;
+  const oos = items.filter(i => stockStatus(i)==='zero').length;
 
   set('kpi-items', items.length);
-  set('kpi-in',   fmt(totalIn));
-  set('kpi-out',  fmt(totalOut));
-  set('kpi-tx',   txs.length);
+  set('kpi-in',  fmt(totalIn));
+  set('kpi-out', fmt(totalOut));
+  set('kpi-ret', fmt(totalRet));
+  set('kpi-low', low);
+  set('kpi-oos', oos);
+  set('kpi-tx',  txs.length);
   set('kpi-locs', activeLocs);
-  set('kpi-oos',  oos);
+  set('kpi-people', people);
 }
 
-/* ── Timeline chart ── */
+/* ── Timeline ── */
 function renderTimeline(txs) {
-  const days = 30;
-  const labels  = [];
-  const inData  = [];
-  const outData = [];
-  const now = new Date();
-
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0,10);
-    labels.push(i === 0 ? 'Today' : d.toLocaleDateString('en-IN', { day:'numeric', month:'short' }));
-    const dayTx = txs.filter(t => {
-      const dt = t.createdAt?.toDate ? t.createdAt.toDate() : new Date(0);
-      return dt.toISOString().slice(0,10) === key;
-    });
-    inData.push(dayTx.filter(t=>t.type==='in').reduce((s,t)=>s+(t.quantity||0),0));
+  const days=30, labels=[], inData=[], outData=[], retData=[], now=new Date();
+  for (let i=days-1;i>=0;i--) {
+    const d=new Date(now); d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    labels.push(i===0?'Today':d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
+    const dayTx=txs.filter(t=>{ const dt=t.createdAt?.toDate?t.createdAt.toDate():new Date(0); return dt.toISOString().slice(0,10)===key; });
+    inData.push(dayTx.filter(isSupplyIn).reduce((s,t)=>s+(t.quantity||0),0));
     outData.push(dayTx.filter(t=>t.type==='out').reduce((s,t)=>s+(t.quantity||0),0));
+    retData.push(dayTx.filter(isReturn).reduce((s,t)=>s+(t.quantity||0),0));
   }
-
   new Chart(document.getElementById('chart-timeline'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Stock In',
-          data: inData,
-          borderColor: C.green, backgroundColor: C.greenL,
-          fill: true, tension: 0.35, pointRadius: 3, pointHoverRadius: 5,
-          borderWidth: 2,
-        },
-        {
-          label: 'Issues',
-          data: outData,
-          borderColor: C.amber, backgroundColor: C.amberL,
-          fill: true, tension: 0.35, pointRadius: 3, pointHoverRadius: 5,
-          borderWidth: 2,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true,
-          labels: { color: C.ink3, font: { family:'Plus Jakarta Sans', size:12, weight:'600' }, boxWidth: 12, padding: 16 },
-        },
-      },
-      scales: chartDefaults.scales,
-    },
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Received', data:inData, borderColor:C.green, backgroundColor:C.greenL, fill:true, tension:.35, pointRadius:2, pointHoverRadius:5, borderWidth:2 },
+      { label:'Issued',   data:outData, borderColor:C.amber, backgroundColor:C.amberL, fill:true, tension:.35, pointRadius:2, pointHoverRadius:5, borderWidth:2 },
+      { label:'Returned', data:retData, borderColor:C.blue, backgroundColor:C.blueL, fill:true, tension:.35, pointRadius:2, pointHoverRadius:5, borderWidth:2 },
+    ]},
+    options:{ responsive:true,
+      plugins:{ legend:{ display:true, labels:{ color:C.ink3, font:{ family:'Plus Jakarta Sans', size:12, weight:'600' }, boxWidth:12, padding:16, usePointStyle:true } } },
+      scales:axes },
   });
 }
 
-/* ── Top items by out qty ── */
+/* ── Top items by usage ── */
 function renderTopItems(txs) {
-  const map = {};
-  txs.filter(t=>t.type==='out').forEach(t => {
-    map[t.itemName] = (map[t.itemName]||0) + (t.quantity||0);
-  });
-  const sorted = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const map={}; txs.filter(t=>t.type==='out').forEach(t=>{ map[t.itemName]=(map[t.itemName]||0)+(t.quantity||0); });
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
   if (!sorted.length) return;
-
-  new Chart(document.getElementById('chart-items'), {
-    type: 'bar',
-    data: {
-      labels: sorted.map(([k]) => k),
-      datasets: [{
-        data: sorted.map(([,v]) => v),
-        backgroundColor: sorted.map((_,i) => C.palette[i % C.palette.length] + 'cc'),
-        borderColor:     sorted.map((_,i) => C.palette[i % C.palette.length]),
-        borderWidth: 1.5, borderRadius: 6,
-      }],
-    },
-    options: {
-      responsive: true, indexAxis: 'y',
-      plugins: { legend: { display: false } },
-      scales: {
-        x: chartDefaults.scales.x,
-        y: { ...chartDefaults.scales.y, grid: { display: false } },
-      },
-    },
-  });
+  barChart('chart-items', sorted, true);
 }
 
 /* ── Issues by location ── */
 function renderByLocation(txs) {
-  const map = {};
-  txs.filter(t=>t.type==='out').forEach(t => {
-    if (t.locationName) map[t.locationName] = (map[t.locationName]||0) + (t.quantity||0);
-  });
-  const entries = Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const map={}; txs.filter(t=>t.type==='out').forEach(t=>{ if(t.locationName) map[t.locationName]=(map[t.locationName]||0)+(t.quantity||0); });
+  const entries=Object.entries(map).sort((a,b)=>b[1]-a[1]);
   if (!entries.length) return;
+  doughnut('chart-locations', entries);
+}
 
-  new Chart(document.getElementById('chart-locations'), {
-    type: 'doughnut',
-    data: {
-      labels: entries.map(([k]) => k),
-      datasets: [{
-        data: entries.map(([,v]) => v),
-        backgroundColor: entries.map((_,i) => C.palette[i % C.palette.length] + 'cc'),
-        borderColor: '#fff', borderWidth: 2, hoverOffset: 6,
-      }],
-    },
-    options: {
-      responsive: true, cutout: '60%',
-      plugins: {
-        legend: {
-          display: true, position: 'bottom',
-          labels: { color: C.ink3, font: { family:'Plus Jakarta Sans', size:11, weight:'600' }, boxWidth: 10, padding: 10 },
-        },
-      },
-    },
+/* ── Issues by person ── */
+function renderByPerson(txs) {
+  const map={}; txs.filter(t=>t.type==='out' && t.issuedToName).forEach(t=>{
+    const k=t.issuedToName.trim(); map[k]=(map[k]||0)+(t.quantity||0);
   });
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if (!sorted.length) return;
+  doughnut('chart-people', sorted);
 }
 
 /* ── Received by supplier ── */
 function renderBySupplier(txs) {
-  const map = {};
-  txs.filter(t=>t.type==='in').forEach(t => {
-    if (t.supplierName) map[t.supplierName] = (map[t.supplierName]||0) + (t.quantity||0);
-  });
-  const sorted = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const map={}; txs.filter(isSupplyIn).forEach(t=>{ if(t.supplierName) map[t.supplierName]=(map[t.supplierName]||0)+(t.quantity||0); });
+  const sorted=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
   if (!sorted.length) return;
-
   new Chart(document.getElementById('chart-suppliers'), {
-    type: 'bar',
-    data: {
-      labels: sorted.map(([k]) => k),
-      datasets: [{
-        data: sorted.map(([,v]) => v),
-        backgroundColor: C.blue + 'aa',
-        borderColor:     C.blue,
-        borderWidth: 1.5, borderRadius: 6,
-      }],
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: chartDefaults.scales,
-    },
+    type:'bar',
+    data:{ labels:sorted.map(([k])=>k), datasets:[{ data:sorted.map(([,v])=>v),
+      backgroundColor:C.blue+'bb', borderColor:C.blue, borderWidth:1.5, borderRadius:6 }] },
+    options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:axes },
   });
 }
 
 /* ── Current stock levels ── */
 function renderStockLevels(items) {
-  const sorted = [...items].sort((a,b) => (b.currentStock||0) - (a.currentStock||0)).slice(0,12);
+  const sorted=[...items].sort((a,b)=>(b.currentStock||0)-(a.currentStock||0)).slice(0,14);
   if (!sorted.length) return;
-
   new Chart(document.getElementById('chart-stock'), {
-    type: 'bar',
-    data: {
-      labels: sorted.map(i => `${i.name}`),
-      datasets: [{
-        label: 'Current Stock',
-        data: sorted.map(i => i.currentStock||0),
-        backgroundColor: sorted.map(i => {
-          const s = i.currentStock||0;
-          return s === 0 ? 'rgba(244,63,94,.6)' : s < 10 ? 'rgba(245,158,11,.6)' : 'rgba(16,185,129,.6)';
-        }),
-        borderColor: sorted.map(i => {
-          const s = i.currentStock||0;
-          return s === 0 ? '#f43f5e' : s < 10 ? '#f59e0b' : '#10b981';
-        }),
-        borderWidth: 1.5, borderRadius: 6,
-      }],
-    },
-    options: {
-      responsive: true, indexAxis: 'y',
-      plugins: { legend: { display: false } },
-      scales: {
-        x: chartDefaults.scales.x,
-        y: { ...chartDefaults.scales.y, grid: { display: false } },
-      },
-    },
+    type:'bar',
+    data:{ labels:sorted.map(i=>i.name), datasets:[{ label:'Current Stock', data:sorted.map(i=>i.currentStock||0),
+      backgroundColor:sorted.map(i=>{ const s=stockStatus(i); return s==='zero'?'rgba(220,79,87,.65)':s==='low'?'rgba(194,135,11,.65)':'rgba(15,157,110,.65)'; }),
+      borderColor:sorted.map(i=>{ const s=stockStatus(i); return s==='zero'?'#dc4f57':s==='low'?'#c2870b':'#0f9d6e'; }),
+      borderWidth:1.5, borderRadius:6 }] },
+    options:{ responsive:true, plugins:{ legend:{ display:false } },
+      scales:{ x:axes.x, y:{ ...axes.y, grid:{ display:false } } } },
   });
 }
 
-/* ── Excel Export ── */
-function setupExport(txs, items) {
-  document.getElementById('export-btn').addEventListener('click', () => {
-    try {
-      const itemMap = {};
-      items.forEach(i => { itemMap[i.id] = i; });
+/* chart builders */
+function barChart(id, sorted, horizontal) {
+  new Chart(document.getElementById(id), {
+    type:'bar',
+    data:{ labels:sorted.map(([k])=>k), datasets:[{ data:sorted.map(([,v])=>v),
+      backgroundColor:sorted.map((_,i)=>C.palette[i%C.palette.length]+'cc'),
+      borderColor:sorted.map((_,i)=>C.palette[i%C.palette.length]), borderWidth:1.5, borderRadius:6 }] },
+    options:{ responsive:true, indexAxis:horizontal?'y':'x', plugins:{ legend:{ display:false } },
+      scales:{ x:axes.x, y:{ ...axes.y, grid:{ display:horizontal?false:true } } } },
+  });
+}
+function doughnut(id, entries) {
+  new Chart(document.getElementById(id), {
+    type:'doughnut',
+    data:{ labels:entries.map(([k])=>k), datasets:[{ data:entries.map(([,v])=>v),
+      backgroundColor:entries.map((_,i)=>C.palette[i%C.palette.length]+'cc'), borderColor:'#fff', borderWidth:2, hoverOffset:6 }] },
+    options:{ responsive:true, cutout:'60%',
+      plugins:{ legend:{ display:true, position:'bottom',
+        labels:{ color:C.ink3, font:{ family:'Plus Jakarta Sans', size:11, weight:'600' }, boxWidth:10, padding:10, usePointStyle:true } } } },
+  });
+}
 
+/* ── Excel export ── */
+function setupExport(txs, items) {
+  function run() {
+    try {
+      const itemMap = {}; items.forEach(i => { itemMap[i.id] = i; });
       const rows = txs.map(t => {
         const dt = t.createdAt?.toDate ? t.createdAt.toDate() : new Date(0);
+        const type = t.type === 'out' ? 'Issue Out' : isReturn(t) ? 'Returned' : 'Stock In';
         return {
-          'Date':       dt.toLocaleDateString('en-IN'),
-          'Time':       dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
-          'Type':       t.type === 'in' ? 'Stock In' : 'Issue Out',
-          'Item':       t.itemName || '',
-          'Quantity':   t.quantity || 0,
-          'Unit':       t.unit || (itemMap[t.itemId]?.unit || ''),
-          'Bill No':    t.billNo || '',
-          'Supplier':   t.supplierName || '',
-          'Location':   t.locationName || '',
-          'Added By':   t.createdByEmail || '',
+          'Date': dt.toLocaleDateString('en-IN'),
+          'Time': dt.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' }),
+          'Type': type,
+          'Item': t.itemName || '',
+          'Quantity': t.quantity || 0,
+          'Unit': t.unit || (itemMap[t.itemId]?.unit || ''),
+          'Bill No': t.billNo || '',
+          'Supplier': isReturn(t) ? '' : (t.supplierName || ''),
+          'Location': t.locationName || t.returnLocationName || '',
+          'Issued To': t.issuedToName || '',
+          'Issued To ID': t.issuedToId || '',
+          'Added By': t.createdByEmail || '',
         };
       });
-
-      const wb  = XLSX.utils.book_new();
-      const ws  = XLSX.utils.json_to_sheet(rows);
-
-      ws['!cols'] = [
-        {wch:12},{wch:8},{wch:12},{wch:20},{wch:10},{wch:10},
-        {wch:16},{wch:22},{wch:24},{wch:28},
-      ];
-
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{wch:12},{wch:8},{wch:11},{wch:20},{wch:9},{wch:9},{wch:15},{wch:20},{wch:22},{wch:18},{wch:14},{wch:26}];
       XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
 
       const stockRows = items.map(i => ({
-        'Item':          i.name,
-        'Unit':          i.unit,
+        'Item': i.name, 'Unit': i.unit,
         'Current Stock': i.currentStock || 0,
+        'Min Threshold': i.minThreshold || 0,
+        'Status': stockStatus(i) === 'zero' ? 'Out of stock' : stockStatus(i) === 'low' ? 'Low' : 'OK',
       }));
       const wsStock = XLSX.utils.json_to_sheet(stockRows);
-      wsStock['!cols'] = [{wch:24},{wch:10},{wch:14}];
+      wsStock['!cols'] = [{wch:24},{wch:10},{wch:14},{wch:14},{wch:14}];
       XLSX.utils.book_append_sheet(wb, wsStock, 'Current Stock');
 
-      const dateStr = new Date().toISOString().slice(0,10);
-      XLSX.writeFile(wb, `inventory-report-${dateStr}.xlsx`);
+      XLSX.writeFile(wb, `inventory-report-${new Date().toISOString().slice(0,10)}.xlsx`);
       toast('Excel file downloaded.', 'ok');
-    } catch (e) {
-      console.error(e);
-      toast('Export failed.', 'err');
-    }
-  });
+    } catch (e) { console.error(e); toast('Export failed.', 'err'); }
+  }
+  document.getElementById('export-btn').addEventListener('click', run);
+  document.getElementById('export-btn2').addEventListener('click', run);
 }
 
 /* ── Helpers ── */
 function set(id, val) { document.getElementById(id).textContent = val; }
-function fmt(n) {
-  const num = Number(n)||0;
-  return num % 1 === 0 ? num.toLocaleString() : num.toLocaleString(undefined,{maximumFractionDigits:2});
-}
+function fmt(n) { const num=Number(n)||0; return num%1===0?num.toLocaleString():num.toLocaleString(undefined,{maximumFractionDigits:2}); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>

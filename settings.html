@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="inventory.css">
 <script src="firebase-config.js"></script>
 <script src="icons.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="handbook.js"></script>
 </head>
 <body>
@@ -19,16 +18,16 @@
 <div class="app-layout" id="app" style="display:none">
 
   <header class="appbar">
-    <div class="brand">
+    <a class="brand" href="index.html">
       <span class="brand-mark" data-ic="box"></span>
       <span class="brand-name">Store <span>Inventory</span></span>
-    </div>
+    </a>
     <nav class="nav">
       <span class="nav-user" id="nav-user"></span>
       <a href="index.html"    class="icon-btn"        data-ic="box"      title="Stock"></a>
       <a href="stats.html"    class="icon-btn"        data-ic="chart"    title="Statistics"></a>
       <a href="settings.html" class="icon-btn active" data-ic="settings" title="Settings"></a>
-      <button class="icon-btn" id="handbook-btn" data-ic="book" title="Download handbook (PDF)"></button>
+      <button class="icon-btn" id="handbook-btn" data-ic="book" title="User Handbook"></button>
       <span class="nav-sep"></span>
       <button class="icon-btn danger" id="logout-btn" data-ic="logout" title="Sign out"></button>
     </nav>

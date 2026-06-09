@@ -26,7 +26,7 @@
       <span class="nav-user" id="nav-user"></span>
       <a href="./"            class="icon-btn active" data-ic="box"     title="Stock"></a>
       <a href="stats/"    class="icon-btn"        data-ic="chart"   title="Statistics"></a>
-      <a href="settings/" class="icon-btn"        data-ic="settings" title="Settings"></a>
+      <button class="icon-btn" id="nav-settings-btn" data-ic="settings" title="Settings"></button>
       <a href="handbook/" target="_blank" class="icon-btn" data-ic="book" title="User Handbook"></a>
       <span class="nav-sep"></span>
       <button class="icon-btn danger" id="logout-btn" data-ic="logout" title="Sign out"></button>
@@ -40,6 +40,7 @@
       <button class="seg-btn" data-tab="add"><span data-ic="plus"></span>Add Stock</button>
       <button class="seg-btn" data-tab="issue"><span data-ic="issue"></span>Issue Item</button>
       <button class="seg-btn" data-tab="history"><span data-ic="history"></span>History</button>
+      <button class="seg-btn" data-tab="settings"><span data-ic="settings"></span>Settings</button>
       <button class="seg-btn hidden" data-tab="master"><span data-ic="shield"></span>Master</button>
     </div>
   </div>
@@ -72,7 +73,7 @@
           <div class="empty-state-ico"><span data-ic="box"></span></div>
           <div class="empty-state-text">No items yet</div>
           <div class="empty-state-sub">Add your items, suppliers, and locations in Settings to start tracking stock.</div>
-          <a href="settings/" class="empty-state-cta"><span data-ic="settings"></span>Open Settings</a>
+          <button class="empty-state-cta" id="empty-settings-btn"><span data-ic="settings"></span>Open Settings</button>
         </div>
         <div class="empty-state hidden" id="search-empty">
           <div class="empty-state-ico"><span data-ic="search"></span></div>
@@ -214,6 +215,92 @@
         <div id="master-list"></div>
       </div>
 
+      <!-- SETTINGS TAB -->
+      <div class="tab-panel" id="tab-settings">
+
+        <!-- Items -->
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <div class="settings-section-title"><span data-ic="box"></span>Items</div>
+            <div class="section-meta" id="st-items-count"></div>
+          </div>
+          <div class="settings-section-body">
+            <div class="settings-add-row">
+              <div class="grow">
+                <div class="fld-label">Item name</div>
+                <input class="mi" id="st-item-name" placeholder="e.g. Phenyl" maxlength="60">
+              </div>
+              <div class="w-unit">
+                <div class="fld-label">Unit</div>
+                <select class="ms" id="st-item-unit">
+                  <option value="litre">Litre</option>
+                  <option value="kg">Kg</option>
+                  <option value="pieces">Pieces</option>
+                  <option value="rolls">Rolls</option>
+                  <option value="packets">Packets</option>
+                  <option value="boxes">Boxes</option>
+                  <option value="bottles">Bottles</option>
+                  <option value="bags">Bags</option>
+                  <option value="pairs">Pairs</option>
+                  <option value="sets">Sets</option>
+                </select>
+              </div>
+              <div class="w-thr">
+                <div class="fld-label">Min. threshold</div>
+                <input class="mi" id="st-item-thr" type="number" min="0" step="any" placeholder="0">
+              </div>
+              <button class="settings-add-btn" id="st-add-item-btn"><span data-ic="plus"></span>Add</button>
+            </div>
+            <div class="settings-list" id="st-items-list">
+              <div class="settings-empty" id="st-items-empty">No items yet. Add one above.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <!-- Suppliers -->
+          <div class="settings-section">
+            <div class="settings-section-header">
+              <div class="settings-section-title"><span data-ic="truck"></span>Suppliers</div>
+              <div class="section-meta" id="st-suppliers-count"></div>
+            </div>
+            <div class="settings-section-body">
+              <div class="settings-add-row">
+                <div class="grow">
+                  <div class="fld-label">Supplier name</div>
+                  <input class="mi" id="st-supplier-name" placeholder="e.g. ABC Chemicals" maxlength="80">
+                </div>
+                <button class="settings-add-btn" id="st-add-supplier-btn"><span data-ic="plus"></span>Add</button>
+              </div>
+              <div class="settings-list" id="st-suppliers-list">
+                <div class="settings-empty" id="st-suppliers-empty">No suppliers yet.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Locations -->
+          <div class="settings-section">
+            <div class="settings-section-header">
+              <div class="settings-section-title"><span data-ic="pin"></span>Locations</div>
+              <div class="section-meta" id="st-locations-count"></div>
+            </div>
+            <div class="settings-section-body">
+              <div class="settings-add-row">
+                <div class="grow">
+                  <div class="fld-label">Location name</div>
+                  <input class="mi" id="st-location-name" placeholder="e.g. Block A Washroom" maxlength="80">
+                </div>
+                <button class="settings-add-btn" id="st-add-location-btn"><span data-ic="plus"></span>Add</button>
+              </div>
+              <div class="settings-list" id="st-locations-list">
+                <div class="settings-empty" id="st-locations-empty">No locations yet.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   </div>
 </div>
@@ -224,10 +311,29 @@
   <button class="mob-tab" data-tab="add"><span data-ic="plus"></span>Add</button>
   <button class="mob-tab" data-tab="issue"><span data-ic="issue"></span>Issue</button>
   <button class="mob-tab" data-tab="history"><span data-ic="history"></span>History</button>
+  <button class="mob-tab" data-tab="settings"><span data-ic="settings"></span>Settings</button>
   <button class="mob-tab hidden" data-tab="master"><span data-ic="shield"></span>Master</button>
 </div>
 
 <div class="toast-container" id="toast-container"></div>
+
+<!-- Settings delete confirm modal -->
+<div class="modal-overlay" id="settings-confirm-modal">
+  <div class="modal" role="dialog">
+    <div class="modal-ico"><span data-ic="alert"></span></div>
+    <div class="modal-title" id="stc-title">Delete?</div>
+    <div class="modal-body"  id="stc-body"></div>
+    <div class="modal-warn hidden" id="stc-warn"><span data-ic="alert"></span><span id="stc-warn-text"></span></div>
+    <div class="modal-confirm-field hidden" id="stc-field">
+      <label class="ml" id="stc-field-label">Type the name to confirm</label>
+      <input class="mi" id="stc-input" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="stc-cancel">Cancel</button>
+      <button class="modal-btn danger" id="stc-ok">Delete</button>
+    </div>
+  </div>
+</div>
 
 <!-- Issue confirmation modal -->
 <div class="modal-overlay" id="issue-confirm-modal" style="display:none">
@@ -258,7 +364,7 @@
 import { initializeApp }                                      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signOut }               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, doc, getDoc,
-         getDocs, addDoc, onSnapshot, runTransaction, setDoc, updateDoc,
+         getDocs, addDoc, deleteDoc, onSnapshot, runTransaction, setDoc, updateDoc,
          arrayUnion, arrayRemove,
          serverTimestamp, query, orderBy, limit }             from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -295,6 +401,7 @@ onAuthStateChanged(auth, user => {
 
 document.getElementById('logout-btn').addEventListener('click', doSignOut);
 async function doSignOut() { await signOut(auth); window.location.href = 'login/'; }
+document.getElementById('nav-settings-btn').addEventListener('click', () => switchTab('settings'));
 
 /* ── Tabs ── */
 function switchTab(name) {
@@ -333,6 +440,7 @@ async function initApp() {
   setupFilters();
   setupSearch();
   if (isAdmin) setupMasterTab();
+  setupSettings();
 }
 
 /* ── Config (suppliers + locations) ── */
@@ -343,17 +451,24 @@ async function loadConfig() {
   ]);
   suppliers = supSnap.exists() ? (supSnap.data().items || []) : [];
   locations = locSnap.exists() ? (locSnap.data().items || []) : [];
+  rebuildDropdowns();
+}
 
-  // Source dropdown = suppliers + special "Returned" option
-  const sel = document.getElementById('add-supplier');
+function rebuildDropdowns() {
+  const sel    = document.getElementById('add-supplier');
+  const curSup = sel.value;
   sel.innerHTML = '<option value="">Select source…</option>';
   suppliers.forEach(s => { const o = document.createElement('option'); o.value = s.id; o.textContent = s.name; sel.appendChild(o); });
   const optg = document.createElement('optgroup'); optg.label = 'Other';
   const ro = document.createElement('option'); ro.value = RETURNED; ro.textContent = 'Returned (not used)';
   optg.appendChild(ro); sel.appendChild(optg);
-
+  sel.value = curSup;
+  const curIssue  = document.getElementById('issue-location').value;
+  const curReturn = document.getElementById('add-return-loc').value;
   populateSelect('issue-location', locations, 'Select location…');
   populateSelect('add-return-loc', locations, 'Select location…');
+  document.getElementById('issue-location').value  = curIssue;
+  document.getElementById('add-return-loc').value  = curReturn;
 }
 
 function populateSelect(id, arr, placeholder) {
@@ -373,6 +488,7 @@ function listenItems() {
     items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderStock();
     updateItemSelects();
+    stRenderItems();
   });
 }
 
@@ -461,6 +577,215 @@ function setupSearch() {
     searchTerm = e.target.value;
     renderStock();
   });
+  document.getElementById('empty-settings-btn').addEventListener('click', () => switchTab('settings'));
+}
+
+/* ── SETTINGS TAB ── */
+function normName(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, ''); }
+
+// Settings confirm modal
+const _stc = {
+  overlay:  document.getElementById('settings-confirm-modal'),
+  title:    document.getElementById('stc-title'),
+  body:     document.getElementById('stc-body'),
+  warn:     document.getElementById('stc-warn'),
+  warnTxt:  document.getElementById('stc-warn-text'),
+  field:    document.getElementById('stc-field'),
+  fieldLbl: document.getElementById('stc-field-label'),
+  input:    document.getElementById('stc-input'),
+  cancel:   document.getElementById('stc-cancel'),
+  ok:       document.getElementById('stc-ok'),
+};
+let _stcResolve = null;
+function _stcClose(val) {
+  _stc.overlay.classList.remove('show');
+  if (_stcResolve) { _stcResolve(val); _stcResolve = null; }
+}
+function stcConfirm({ title, body, warn = '', confirmLabel = 'Delete', requireText = null }) {
+  _stc.title.textContent  = title;
+  _stc.body.innerHTML     = body;
+  _stc.ok.textContent     = confirmLabel;
+  if (warn) { _stc.warnTxt.textContent = warn; _stc.warn.classList.remove('hidden'); }
+  else _stc.warn.classList.add('hidden');
+  if (requireText) {
+    _stc.field.classList.remove('hidden');
+    _stc.fieldLbl.textContent = `Type "${requireText}" to confirm`;
+    _stc.input.value  = '';
+    _stc.ok.disabled  = true;
+    _stc.input.oninput = () => { _stc.ok.disabled = normName(_stc.input.value) !== normName(requireText); };
+  } else {
+    _stc.field.classList.add('hidden');
+    _stc.ok.disabled  = false;
+    _stc.input.oninput = null;
+  }
+  _stc.overlay.classList.add('show');
+  if (requireText) setTimeout(() => _stc.input.focus(), 60);
+  return new Promise(r => { _stcResolve = r; });
+}
+_stc.cancel.addEventListener('click',  () => _stcClose(false));
+_stc.ok.addEventListener('click',      () => { if (!_stc.ok.disabled) _stcClose(true); });
+_stc.overlay.addEventListener('click', e  => { if (e.target === _stc.overlay) _stcClose(false); });
+document.addEventListener('keydown',   e  => { if (e.key === 'Escape' && _stc.overlay.classList.contains('show')) _stcClose(false); });
+
+function setupSettings() {
+  stRenderItems();
+  stRenderConfig('suppliers');
+  stRenderConfig('locations');
+  stSetupItemAdd();
+  stSetupSupplierAdd();
+  stSetupLocationAdd();
+}
+
+function stRenderItems() {
+  const list  = document.getElementById('st-items-list');
+  const empty = document.getElementById('st-items-empty');
+  const count = document.getElementById('st-items-count');
+  if (!list) return;
+  count.textContent = items.length ? `${items.length} item${items.length !== 1 ? 's' : ''}` : '';
+  list.querySelectorAll('.settings-item').forEach(e => e.remove());
+  if (!items.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  items.forEach(item => {
+    const thr = item.minThreshold || 0;
+    const row = document.createElement('div');
+    row.className = 'settings-item';
+    row.innerHTML = `
+      <span class="settings-item-name">${esc(item.name)}</span>
+      <span class="settings-item-badge">${esc(item.unit)}</span>
+      ${thr > 0 ? `<span class="settings-item-badge thr">min ${fmt(thr)}</span>` : ''}
+      <span class="settings-item-badge stock">${fmt(item.currentStock || 0)} in stock</span>
+      <button class="settings-del-btn" title="Delete">${window.icon('x')}</button>`;
+    row.querySelector('.settings-del-btn').addEventListener('click', () => stConfirmDeleteItem(item));
+    list.appendChild(row);
+  });
+}
+
+function stSetupItemAdd() {
+  const nameInp = document.getElementById('st-item-name');
+  const unitSel = document.getElementById('st-item-unit');
+  const thrInp  = document.getElementById('st-item-thr');
+  const btn     = document.getElementById('st-add-item-btn');
+  async function doAdd() {
+    const name = nameInp.value.trim();
+    if (!name) { toast('Enter an item name.', 'err'); return; }
+    const dupe = items.find(i => normName(i.name) === normName(name));
+    if (dupe) { toast(`Already exists as "${dupe.name}".`, 'err'); return; }
+    let thr = parseFloat(thrInp.value);
+    if (isNaN(thr) || thr < 0) thr = 0;
+    btn.disabled = true;
+    try {
+      await addDoc(collection(db, 'invItems'), {
+        name, unit: unitSel.value, minThreshold: thr, currentStock: 0, createdAt: serverTimestamp()
+      });
+      nameInp.value = ''; thrInp.value = '';
+      toast(`"${name}" added.`, 'ok');
+    } catch { toast('Failed to add item.', 'err'); }
+    btn.disabled = false;
+  }
+  btn.addEventListener('click', doAdd);
+  nameInp.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  thrInp.addEventListener('keydown',  e => { if (e.key === 'Enter') doAdd(); });
+}
+
+async function stConfirmDeleteItem(item) {
+  const stock = item.currentStock || 0;
+  const ok = await stcConfirm({
+    title: 'Delete item?',
+    body:  `Delete <strong>${esc(item.name)}</strong>. Transaction history is kept, but the item will no longer appear in any dropdown.`,
+    warn:  stock > 0 ? `This item still has ${fmt(stock)} ${esc(item.unit)} in stock.` : '',
+    requireText: stock > 0 ? item.name : null,
+  });
+  if (!ok) return;
+  try {
+    await deleteDoc(doc(db, 'invItems', item.id));
+    toast(`"${item.name}" deleted.`);
+  } catch { toast('Failed to delete item.', 'err'); }
+}
+
+function stRenderConfig(key) {
+  const arr   = key === 'suppliers' ? suppliers : locations;
+  const list  = document.getElementById(`st-${key}-list`);
+  const empty = document.getElementById(`st-${key}-empty`);
+  const count = document.getElementById(`st-${key}-count`);
+  if (!list) return;
+  count.textContent = arr.length ? `${arr.length}` : '';
+  list.querySelectorAll('.settings-item').forEach(e => e.remove());
+  if (!arr.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  arr.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'settings-item';
+    row.innerHTML = `<span class="settings-item-name">${esc(item.name)}</span>
+      <button class="settings-del-btn" title="Remove">${window.icon('x')}</button>`;
+    row.querySelector('.settings-del-btn').addEventListener('click', () => stDeleteConfigItem(key, item));
+    list.appendChild(row);
+  });
+}
+
+async function stSaveConfig(key, arr) { await setDoc(doc(db, 'invConfig', key), { items: arr }); }
+
+async function stDeleteConfigItem(key, item) {
+  const label = key === 'suppliers' ? 'supplier' : 'location';
+  const ok = await stcConfirm({
+    title: `Remove ${label}?`,
+    body:  `Remove <strong>${esc(item.name)}</strong>. Past transactions are kept; it just won't appear in new entries.`,
+    confirmLabel: 'Remove',
+  });
+  if (!ok) return;
+  const snap    = await getDoc(doc(db, 'invConfig', key));
+  const updated = (snap.exists() ? snap.data().items || [] : []).filter(i => i.id !== item.id);
+  await stSaveConfig(key, updated);
+  if (key === 'suppliers') suppliers = updated;
+  else                     locations = updated;
+  rebuildDropdowns();
+  stRenderConfig(key);
+  toast(`"${item.name}" removed.`);
+}
+
+function stSetupSupplierAdd() {
+  const inp = document.getElementById('st-supplier-name');
+  const btn = document.getElementById('st-add-supplier-btn');
+  async function doAdd() {
+    const name = inp.value.trim();
+    if (!name) { toast('Enter a supplier name.', 'err'); return; }
+    const dupe = suppliers.find(s => normName(s.name) === normName(name));
+    if (dupe) { toast(`Already exists as "${dupe.name}".`, 'err'); return; }
+    btn.disabled = true;
+    try {
+      suppliers.push({ id: 'sup_' + Date.now(), name });
+      await stSaveConfig('suppliers', suppliers);
+      rebuildDropdowns();
+      stRenderConfig('suppliers');
+      inp.value = '';
+      toast(`"${name}" added.`, 'ok');
+    } catch { toast('Failed to save.', 'err'); }
+    btn.disabled = false;
+  }
+  btn.addEventListener('click', doAdd);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+}
+
+function stSetupLocationAdd() {
+  const inp = document.getElementById('st-location-name');
+  const btn = document.getElementById('st-add-location-btn');
+  async function doAdd() {
+    const name = inp.value.trim();
+    if (!name) { toast('Enter a location name.', 'err'); return; }
+    const dupe = locations.find(l => normName(l.name) === normName(name));
+    if (dupe) { toast(`Already exists as "${dupe.name}".`, 'err'); return; }
+    btn.disabled = true;
+    try {
+      locations.push({ id: 'loc_' + Date.now(), name });
+      await stSaveConfig('locations', locations);
+      rebuildDropdowns();
+      stRenderConfig('locations');
+      inp.value = '';
+      toast(`"${name}" added.`, 'ok');
+    } catch { toast('Failed to save.', 'err'); }
+    btn.disabled = false;
+  }
+  btn.addEventListener('click', doAdd);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
 }
 
 function updateItemSelects() {

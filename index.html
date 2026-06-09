@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="inventory.css">
 <script src="firebase-config.js"></script>
 <script src="icons.js"></script>
-<script src="handbook.js"></script>
 </head>
 <body>
 
@@ -26,9 +25,9 @@
     <nav class="nav">
       <span class="nav-user" id="nav-user"></span>
       <a href="index.html"    class="icon-btn active" data-ic="box"     title="Stock"></a>
-      <a href="stats.html"    class="icon-btn"        data-ic="chart"   title="Statistics"></a>
-      <a href="settings.html" class="icon-btn"        data-ic="settings" title="Settings"></a>
-      <button class="icon-btn" id="handbook-btn" data-ic="book" title="User Handbook"></button>
+      <a href="stats/"    class="icon-btn"        data-ic="chart"   title="Statistics"></a>
+      <a href="settings/" class="icon-btn"        data-ic="settings" title="Settings"></a>
+      <a href="handbook/" target="_blank" class="icon-btn" data-ic="book" title="User Handbook"></a>
       <span class="nav-sep"></span>
       <button class="icon-btn danger" id="logout-btn" data-ic="logout" title="Sign out"></button>
     </nav>
@@ -72,7 +71,7 @@
           <div class="empty-state-ico"><span data-ic="box"></span></div>
           <div class="empty-state-text">No items yet</div>
           <div class="empty-state-sub">Add your items, suppliers, and locations in Settings to start tracking stock.</div>
-          <a href="settings.html" class="empty-state-cta"><span data-ic="settings"></span>Open Settings</a>
+          <a href="settings/" class="empty-state-cta"><span data-ic="settings"></span>Open Settings</a>
         </div>
         <div class="empty-state hidden" id="search-empty">
           <div class="empty-state-ico"><span data-ic="search"></span></div>
@@ -212,7 +211,7 @@ let searchTerm   = '';
 
 /* ── Auth ── */
 onAuthStateChanged(auth, user => {
-  if (!user) { window.location.href = 'login.html'; return; }
+  if (!user) { window.location.href = 'login/'; return; }
   currentUser = user;
   document.getElementById('nav-user').textContent = user.email;
   document.getElementById('loading').classList.add('gone');
@@ -221,18 +220,7 @@ onAuthStateChanged(auth, user => {
 });
 
 document.getElementById('logout-btn').addEventListener('click', doSignOut);
-async function doSignOut() { await signOut(auth); window.location.href = 'login.html'; }
-
-/* ── Handbook ── */
-document.getElementById('handbook-btn').addEventListener('click', () => {
-  try {
-    window.generateHandbook({
-      itemCount: items.length,
-      locationCount: locations.length,
-    });
-    toast('Handbook downloaded.', 'ok');
-  } catch (e) { console.error(e); toast('Could not generate handbook.', 'err'); }
-});
+async function doSignOut() { await signOut(auth); window.location.href = 'login/'; }
 
 /* ── Tabs ── */
 function switchTab(name) {

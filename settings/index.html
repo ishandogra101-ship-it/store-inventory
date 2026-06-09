@@ -6,10 +6,9 @@
 <title>Store Inventory — Settings</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="inventory.css">
-<script src="firebase-config.js"></script>
-<script src="icons.js"></script>
-<script src="handbook.js"></script>
+<link rel="stylesheet" href="../inventory.css">
+<script src="../firebase-config.js"></script>
+<script src="../icons.js"></script>
 </head>
 <body>
 
@@ -18,16 +17,16 @@
 <div class="app-layout" id="app" style="display:none">
 
   <header class="appbar">
-    <a class="brand" href="index.html">
+    <a class="brand" href="../">
       <span class="brand-mark" data-ic="box"></span>
       <span class="brand-name">Store <span>Inventory</span></span>
     </a>
     <nav class="nav">
       <span class="nav-user" id="nav-user"></span>
-      <a href="index.html"    class="icon-btn"        data-ic="box"      title="Stock"></a>
-      <a href="stats.html"    class="icon-btn"        data-ic="chart"    title="Statistics"></a>
-      <a href="settings.html" class="icon-btn active" data-ic="settings" title="Settings"></a>
-      <button class="icon-btn" id="handbook-btn" data-ic="book" title="User Handbook"></button>
+      <a href="../"    class="icon-btn"        data-ic="box"      title="Stock"></a>
+      <a href="../stats/"    class="icon-btn"        data-ic="chart"    title="Statistics"></a>
+      <a href="../settings/" class="icon-btn active" data-ic="settings" title="Settings"></a>
+      <a href="../handbook/" target="_blank" class="icon-btn" data-ic="book" title="User Handbook"></a>
       <span class="nav-sep"></span>
       <button class="icon-btn danger" id="logout-btn" data-ic="logout" title="Sign out"></button>
     </nav>
@@ -123,9 +122,9 @@
 
 <!-- Mobile bottom tab bar -->
 <div class="mobile-tab-bar">
-  <a href="index.html"    class="mob-tab"        style="text-decoration:none"><span data-ic="box"></span>Stock</a>
-  <a href="stats.html"    class="mob-tab"        style="text-decoration:none"><span data-ic="chart"></span>Stats</a>
-  <a href="settings.html" class="mob-tab active" style="text-decoration:none"><span data-ic="settings"></span>Settings</a>
+  <a href="../"    class="mob-tab"        style="text-decoration:none"><span data-ic="box"></span>Stock</a>
+  <a href="../stats/"    class="mob-tab"        style="text-decoration:none"><span data-ic="chart"></span>Stats</a>
+  <a href="../settings/" class="mob-tab active" style="text-decoration:none"><span data-ic="settings"></span>Settings</a>
 </div>
 
 <!-- Confirm modal -->
@@ -168,7 +167,7 @@ let locationsCache = [];
 
 /* ── Auth ── */
 onAuthStateChanged(auth, user => {
-  if (!user) { window.location.href = 'login.html'; return; }
+  if (!user) { window.location.href = '../login/'; return; }
   currentUser = user;
   document.getElementById('nav-user').textContent = user.email;
   document.getElementById('loading').classList.add('gone');
@@ -177,14 +176,8 @@ onAuthStateChanged(auth, user => {
 });
 
 document.getElementById('logout-btn').addEventListener('click', doSignOut);
-async function doSignOut() { await signOut(auth); window.location.href = 'login.html'; }
+async function doSignOut() { await signOut(auth); window.location.href = '../login/'; }
 
-document.getElementById('handbook-btn').addEventListener('click', () => {
-  try {
-    window.generateHandbook({ itemCount: itemsCache.length, locationCount: locationsCache.length });
-    toast('Handbook downloaded.', 'ok');
-  } catch (e) { console.error(e); toast('Could not generate handbook.', 'err'); }
-});
 
 /* ── Toast ── */
 function toast(msg, type = '') {

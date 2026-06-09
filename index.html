@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="inventory.css">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="firebase-config.js"></script>
 <script src="icons.js"></script>
 </head>
@@ -39,8 +40,9 @@
       <button class="seg-btn" data-tab="add"><span data-ic="plus"></span>Add Stock</button>
       <button class="seg-btn" data-tab="issue"><span data-ic="issue"></span>Issue Item</button>
       <button class="seg-btn" data-tab="history"><span data-ic="history"></span>History</button>
-      <button class="seg-btn" data-tab="settings"><span data-ic="settings"></span>Settings</button>
-      <button class="seg-btn hidden" data-tab="master"><span data-ic="shield"></span>Master</button>
+      <button class="seg-btn" data-tab="logs"><span data-ic="inbox"></span>Logs</button>
+      <button class="seg-btn" data-tab="master"><span data-ic="layers"></span>Master</button>
+      <button class="seg-btn hidden" data-tab="settings"><span data-ic="shield"></span>Settings</button>
     </div>
   </div>
 
@@ -72,7 +74,7 @@
           <div class="empty-state-ico"><span data-ic="box"></span></div>
           <div class="empty-state-text">No items yet</div>
           <div class="empty-state-sub">Add your items, suppliers, and locations in Settings to start tracking stock.</div>
-          <button class="empty-state-cta" id="empty-settings-btn"><span data-ic="settings"></span>Open Settings</button>
+          <button class="empty-state-cta" id="empty-settings-btn"><span data-ic="layers"></span>Open Master</button>
         </div>
         <div class="empty-state hidden" id="search-empty">
           <div class="empty-state-ico"><span data-ic="search"></span></div>
@@ -182,8 +184,8 @@
         </div>
       </div>
 
-      <!-- MASTER TAB -->
-      <div class="tab-panel" id="tab-master">
+      <!-- SETTINGS TAB (access control) -->
+      <div class="tab-panel" id="tab-settings">
         <div class="section-header">
           <div class="section-title">Access Control</div>
           <span class="section-meta" id="master-meta"></span>
@@ -215,21 +217,24 @@
         </div>
 
         <div id="master-list"></div>
+      </div>
 
-        <div class="section-header" style="margin-top:28px">
+      <!-- LOGS TAB (audit log) -->
+      <div class="tab-panel" id="tab-logs">
+        <div class="section-header">
           <div class="section-title">Activity Log</div>
           <span class="section-meta" id="audit-meta"></span>
         </div>
         <div class="audit-list" id="audit-list"></div>
         <div class="empty-state hidden" id="audit-empty">
-          <div class="empty-state-ico"><span data-ic="history"></span></div>
+          <div class="empty-state-ico"><span data-ic="inbox"></span></div>
           <div class="empty-state-text">No activity yet</div>
-          <div class="empty-state-sub">Actions like adding items, issuing stock, and access changes will appear here.</div>
+          <div class="empty-state-sub">Every action — stock entries, issues, edits, deletions — appears here.</div>
         </div>
       </div>
 
-      <!-- SETTINGS TAB -->
-      <div class="tab-panel" id="tab-settings">
+      <!-- MASTER TAB (items/suppliers/locations) -->
+      <div class="tab-panel" id="tab-master">
 
         <!-- Items -->
         <div class="settings-section">
@@ -266,6 +271,11 @@
             </div>
             <div class="settings-list" id="st-items-list">
               <div class="settings-empty" id="st-items-empty">No items yet. Add one above.</div>
+            </div>
+            <div class="bulk-upload-row">
+              <input type="file" id="bulk-file" accept=".xlsx,.xls,.csv" style="display:none">
+              <button class="bulk-upload-btn" id="bulk-upload-btn"><span data-ic="download"></span>Bulk import from Excel / CSV</button>
+              <button class="bulk-template-btn" id="bulk-template-btn"><span data-ic="download"></span>Download template</button>
             </div>
           </div>
         </div>
@@ -324,8 +334,9 @@
   <button class="mob-tab" data-tab="add"><span data-ic="plus"></span>Add</button>
   <button class="mob-tab" data-tab="issue"><span data-ic="issue"></span>Issue</button>
   <button class="mob-tab" data-tab="history"><span data-ic="history"></span>History</button>
-  <button class="mob-tab" data-tab="settings"><span data-ic="settings"></span>Settings</button>
-  <button class="mob-tab hidden" data-tab="master"><span data-ic="shield"></span>Master</button>
+  <button class="mob-tab" data-tab="logs"><span data-ic="inbox"></span>Logs</button>
+  <button class="mob-tab" data-tab="master"><span data-ic="layers"></span>Master</button>
+  <button class="mob-tab hidden" data-tab="settings"><span data-ic="shield"></span>Settings</button>
 </div>
 
 <div class="toast-container" id="toast-container"></div>
@@ -369,6 +380,21 @@
     <div class="modal-actions">
       <button class="modal-btn" id="void-confirm-cancel">Cancel</button>
       <button class="modal-btn danger" id="void-confirm-ok">Void Transaction</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk import preview modal -->
+<div class="modal-overlay" id="bulk-modal" style="display:none">
+  <div class="modal" style="max-width:500px;width:92vw">
+    <div class="modal-title">Bulk Import Preview</div>
+    <div class="modal-body" style="margin-bottom:0">
+      <div id="bulk-preview-info"></div>
+      <div id="bulk-preview-table" style="max-height:300px;overflow-y:auto;margin-top:10px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="bulk-cancel">Cancel</button>
+      <button class="modal-btn primary" id="bulk-confirm">Import</button>
     </div>
   </div>
 </div>
@@ -490,8 +516,10 @@ async function initApp() {
   setupIssueForm();
   setupFilters();
   setupSearch();
-  if (isAdmin) { setupMasterTab(); listenAudit(); }
+  if (isAdmin) setupMasterTab();
+  listenAudit();
   setupSettings();
+  setupBulkUpload();
 }
 
 /* ── Config (suppliers + locations) ── */
@@ -628,7 +656,7 @@ function setupSearch() {
     searchTerm = e.target.value;
     renderStock();
   });
-  document.getElementById('empty-settings-btn').addEventListener('click', () => switchTab('settings'));
+  document.getElementById('empty-settings-btn').addEventListener('click', () => switchTab('master'));
 }
 
 /* ── SETTINGS TAB ── */
@@ -685,6 +713,124 @@ function setupSettings() {
   stSetupItemAdd();
   stSetupSupplierAdd();
   stSetupLocationAdd();
+}
+
+/* ── Bulk upload ── */
+let _bulkParsed = [];
+
+function setupBulkUpload() {
+  const fileInput = document.getElementById('bulk-file');
+  document.getElementById('bulk-upload-btn').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', handleBulkFile);
+  document.getElementById('bulk-template-btn').addEventListener('click', downloadBulkTemplate);
+  document.getElementById('bulk-cancel').addEventListener('click', closeBulkModal);
+  document.getElementById('bulk-confirm').addEventListener('click', executeBulkImport);
+  document.getElementById('bulk-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('bulk-modal')) closeBulkModal();
+  });
+}
+
+function closeBulkModal() {
+  const m = document.getElementById('bulk-modal');
+  m.classList.remove('show');
+  setTimeout(() => { m.style.display = 'none'; }, 200);
+}
+
+async function handleBulkFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  try {
+    const data = await file.arrayBuffer();
+    const wb   = XLSX.read(data);
+    const ws   = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+    const parsed = rows.map(row => {
+      const n = {};
+      Object.keys(row).forEach(k => { n[k.toLowerCase().trim().replace(/\s+/g,'_')] = row[k]; });
+      return {
+        name:      String(n.item_name || n.name || n.item || '').trim(),
+        unit:      String(n.unit || n.units || 'pcs').trim() || 'pcs',
+        stock:     Math.max(0, parseFloat(n.initial_stock || n.stock || n.quantity || n.qty || 0) || 0),
+        threshold: Math.max(0, parseFloat(n.min_threshold || n.threshold || n.min_stock || 0) || 0),
+      };
+    }).filter(r => r.name);
+    if (!parsed.length) { toast('No valid rows found. Check column headers match the template.', 'err'); return; }
+    _bulkParsed = parsed;
+    showBulkPreview(parsed);
+  } catch (err) {
+    toast('Could not read file. Use the template to ensure the correct format.', 'err');
+    console.error(err);
+  }
+}
+
+function showBulkPreview(rows) {
+  const existing = new Set(items.map(i => normName(i.name)));
+  const newRows  = rows.filter(r => !existing.has(normName(r.name)));
+  const dupeRows = rows.filter(r =>  existing.has(normName(r.name)));
+  document.getElementById('bulk-preview-info').innerHTML = `
+    <div class="bulk-preview-summary">
+      <span class="bulk-stat new">${newRows.length} new item${newRows.length !== 1 ? 's' : ''} to import</span>
+      ${dupeRows.length ? `<span class="bulk-stat skip">${dupeRows.length} duplicate${dupeRows.length !== 1 ? 's' : ''} will be skipped</span>` : ''}
+    </div>`;
+  document.getElementById('bulk-preview-table').innerHTML = `
+    <table class="confirm-table" style="width:100%;font-size:12.5px">
+      <thead><tr><td><strong>Item Name</strong></td><td><strong>Unit</strong></td><td><strong>Stock</strong></td><td><strong>Min</strong></td><td></td></tr></thead>
+      <tbody>
+        ${rows.map(r => {
+          const dupe = existing.has(normName(r.name));
+          return `<tr style="${dupe ? 'opacity:.45' : ''}">
+            <td>${esc(r.name)}</td><td>${esc(r.unit)}</td><td>${fmt(r.stock)}</td>
+            <td>${r.threshold > 0 ? fmt(r.threshold) : '—'}</td>
+            <td style="color:${dupe ? 'var(--amberD)' : 'var(--greenD)'}; font-weight:700">${dupe ? 'Skip' : 'New'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+  document.getElementById('bulk-confirm').disabled = newRows.length === 0;
+  const m = document.getElementById('bulk-modal');
+  m.style.display = '';
+  requestAnimationFrame(() => m.classList.add('show'));
+}
+
+async function executeBulkImport() {
+  const existing = new Set(items.map(i => normName(i.name)));
+  const newRows  = _bulkParsed.filter(r => !existing.has(normName(r.name)));
+  if (!newRows.length) return;
+  document.getElementById('bulk-confirm').disabled = true;
+  document.getElementById('bulk-confirm').textContent = 'Importing…';
+  let success = 0, failed = 0;
+  for (const row of newRows) {
+    try {
+      await addDoc(collection(db, 'invItems'), {
+        name: row.name, unit: row.unit, minThreshold: row.threshold,
+        currentStock: row.stock, createdAt: serverTimestamp()
+      });
+      success++;
+    } catch { failed++; }
+  }
+  closeBulkModal();
+  document.getElementById('bulk-confirm').textContent = 'Import';
+  document.getElementById('bulk-confirm').disabled = false;
+  toast(`Imported ${success} item${success !== 1 ? 's' : ''}${failed ? `, ${failed} failed` : ''}.`, success > 0 ? 'ok' : 'err');
+  if (success > 0) {
+    const names = newRows.slice(0, 5).map(r => r.name).join(', ') + (newRows.length > 5 ? ` +${newRows.length - 5} more` : '');
+    logAudit('bulk.upload', `Bulk imported ${success} item${success !== 1 ? 's' : ''}: ${names}`);
+  }
+}
+
+function downloadBulkTemplate() {
+  const data = [
+    ['Item Name', 'Unit', 'Initial Stock', 'Min Threshold'],
+    ['Bolt M10', 'pcs', 500, 50],
+    ['Engine Oil 5W30', 'litre', 20, 5],
+    ['Safety Gloves', 'pairs', 100, 20],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{ wch: 24 }, { wch: 10 }, { wch: 15 }, { wch: 15 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Items');
+  XLSX.writeFile(wb, 'inventory-bulk-template.xlsx');
 }
 
 function stRenderItems() {
@@ -984,10 +1130,11 @@ const AUDIT_LABELS = {
   'tx.in': 'Stock In',   'tx.return': 'Return',  'tx.issue': 'Issue',
   'tx.void': 'Voided',   'tx.delete': 'Deleted',
   'access.approve': 'User Added', 'access.remove': 'User Removed', 'access.admin': 'Admin Changed',
+  'bulk.upload': 'Bulk Import',
 };
 
 function auditCategory(action) {
-  if (action.startsWith('item.'))     return 'item';
+  if (action.startsWith('item.') || action.startsWith('bulk.')) return 'item';
   if (action.startsWith('supplier.') || action.startsWith('location.')) return 'config';
   if (action.startsWith('tx.'))       return 'tx';
   if (action.startsWith('access.'))   return 'access';
@@ -1148,9 +1295,9 @@ async function loadAccess() {
 }
 
 function revealMasterTab() {
-  document.querySelectorAll('[data-tab="master"]').forEach(el => {
+  document.querySelectorAll('[data-tab="settings"]').forEach(el => {
     el.classList.remove('hidden');
-    el.style.removeProperty('display'); // clear any inline override
+    el.style.removeProperty('display');
   });
 }
 

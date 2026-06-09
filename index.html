@@ -1236,13 +1236,13 @@ function renderHistory() {
       <div class="tx-right">
         <span class="tx-qty-val ${isVoidEntry ? 'tx-qty-void' : qtyCls}">${sign}${fmt(tx.quantity)}</span>
         <span class="tx-unit">${esc(tx.unit || '')}</span>
-        ${!isVoidEntry && !isVoided ? `<button class="void-btn">${window.icon('x')}Void</button>` : ''}
+        ${isAdmin && !isVoidEntry && !isVoided ? `<button class="void-btn">${window.icon('x')}Void</button>` : ''}
         ${isAdmin ? `<button class="void-btn tx-del-btn" title="Hard delete">${window.icon('trash')}</button>` : ''}
         <span class="tx-time">${relTime(ts)}</span>
       </div>`;
     list.appendChild(row);
 
-    if (!isVoidEntry && !isVoided) {
+    if (isAdmin && !isVoidEntry && !isVoided) {
       row.querySelector('.void-btn').addEventListener('click', () => voidTransaction(tx));
     }
     if (isAdmin) {
@@ -1610,6 +1610,7 @@ function showIssueConfirm({ item, qty, location, toName, toId, notes }) {
 }
 
 async function voidTransaction(origTx) {
+  if (!isAdmin) { toast('Only admins can void transactions.', 'err'); return; }
   if (allTx.some(t => t.type === 'void' && t.voidOfId === origTx.id)) {
     toast('This transaction was already voided.', 'err'); return;
   }

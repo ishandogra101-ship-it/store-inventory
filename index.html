@@ -192,6 +192,31 @@
 
 <div class="toast-container" id="toast-container"></div>
 
+<!-- Issue confirmation modal -->
+<div class="modal-overlay" id="issue-confirm-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Confirm Issue</div>
+    <div class="modal-body" id="issue-confirm-body"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="issue-confirm-cancel">← Edit</button>
+      <button class="modal-btn primary" id="issue-confirm-ok">Issue Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- Void transaction modal -->
+<div class="modal-overlay" id="void-confirm-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-ico"><span data-ic="alert"></span></div>
+    <div class="modal-title">Void this transaction?</div>
+    <div class="modal-body" id="void-confirm-body"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="void-confirm-cancel">Cancel</button>
+      <button class="modal-btn danger" id="void-confirm-ok">Void Transaction</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp }                                      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signOut }               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -416,6 +441,7 @@ function listenHistory() {
 }
 
 function txKind(tx) {
+  if (tx.type === 'void') return 'void';
   if (tx.type === 'out') return 'out';
   return tx.source === 'returned' ? 'returned' : 'in';
 }
@@ -425,7 +451,9 @@ function renderHistory() {
   const empty = document.getElementById('tx-empty');
   const count = document.getElementById('tx-count');
 
-  const filtered = currentFilter === 'all' ? allTx : allTx.filter(t => txKind(t) === currentFilter);
+  const filtered = currentFilter === 'all'
+    ? allTx
+    : allTx.filter(t => t.type !== 'void' && txKind(t) === currentFilter);
   count.textContent = filtered.length ? `${filtered.length} record${filtered.length !== 1 ? 's' : ''}` : '';
   list.innerHTML = '';
 
@@ -433,10 +461,17 @@ function renderHistory() {
   empty.classList.add('hidden');
 
   filtered.forEach(tx => {
-    const kind = txKind(tx);
-    const ts   = tx.createdAt?.toDate ? tx.createdAt.toDate() : new Date();
+    const kind        = txKind(tx);
+    const ts          = tx.createdAt?.toDate ? tx.createdAt.toDate() : new Date();
+    const isVoided    = tx.voided === true;
+    const isVoidEntry = kind === 'void';
     let badgeCls, badgeIc, qtyCls, sign, meta;
-    if (kind === 'out') {
+
+    if (isVoidEntry) {
+      badgeCls = 'tx-badge-void'; badgeIc = 'x'; qtyCls = 'tx-qty-void';
+      sign = tx.origType === 'out' ? '−' : '+';
+      meta = `${window.icon('ret')}<span>Reversal — stock ${tx.origType === 'out' ? 'restored' : 'corrected'}</span>`;
+    } else if (kind === 'out') {
       badgeCls='tx-badge-out'; badgeIc='issue'; qtyCls='tx-qty-out'; sign='−';
       const who = tx.issuedToName ? ` · ${esc(tx.issuedToName)}${tx.issuedToId ? ' ('+esc(tx.issuedToId)+')' : ''}` : '';
       meta = `${window.icon('pin')}<span>${esc(tx.locationName || '—')}${who}</span>`;
@@ -447,20 +482,31 @@ function renderHistory() {
       badgeCls='tx-badge-in'; badgeIc='down'; qtyCls='tx-qty-in'; sign='+';
       meta = `${window.icon('truck')}<span>${esc(tx.supplierName || '—')} · Bill ${esc(tx.billNo || '—')}</span>`;
     }
+
     const row = document.createElement('div');
-    row.className = 'tx-item';
+    row.className = 'tx-item' + (isVoided ? ' tx-voided' : '') + (isVoidEntry ? ' tx-void-entry' : '');
     row.innerHTML = `
       <div class="tx-badge ${badgeCls}">${window.icon(badgeIc)}</div>
       <div class="tx-info">
-        <div class="tx-item-name">${esc(tx.itemName || '—')}</div>
+        <div class="tx-name-row">
+          <span class="tx-item-name">${esc(tx.itemName || '—')}</span>
+          ${isVoided    ? '<span class="tx-voided-pill">VOIDED</span>'   : ''}
+          ${isVoidEntry ? '<span class="tx-voided-pill">REVERSAL</span>' : ''}
+        </div>
         <div class="tx-meta">${meta}</div>
+        <div class="tx-by">${window.icon('user')} ${esc(tx.createdByEmail || '—')}</div>
       </div>
       <div class="tx-right">
-        <span class="tx-qty-val ${qtyCls}">${sign}${fmt(tx.quantity)}</span>
+        <span class="tx-qty-val ${isVoidEntry ? 'tx-qty-void' : qtyCls}">${sign}${fmt(tx.quantity)}</span>
         <span class="tx-unit">${esc(tx.unit || '')}</span>
+        ${!isVoidEntry && !isVoided ? `<button class="void-btn">${window.icon('x')}Void</button>` : ''}
         <span class="tx-time">${relTime(ts)}</span>
       </div>`;
     list.appendChild(row);
+
+    if (!isVoidEntry && !isVoided) {
+      row.querySelector('.void-btn').addEventListener('click', () => voidTransaction(tx));
+    }
   });
 }
 
@@ -594,6 +640,9 @@ async function submitIssue() {
     return;
   }
 
+  const confirmed = await showIssueConfirm({ item, qty, location, toName, toId });
+  if (!confirmed) return;
+
   const btn = document.getElementById('issue-submit');
   btn.disabled = true;
   try {
@@ -629,6 +678,88 @@ async function submitIssue() {
     }
   }
   btn.disabled = false;
+}
+
+function showIssueConfirm({ item, qty, location, toName, toId }) {
+  return new Promise(resolve => {
+    document.getElementById('issue-confirm-body').innerHTML = `
+      <table class="confirm-table">
+        <tr><td>Item</td><td><strong>${esc(item.name)}</strong></td></tr>
+        <tr><td>Quantity</td><td><strong>${fmt(qty)} ${esc(item.unit)}</strong></td></tr>
+        <tr><td>Location</td><td><strong>${esc(location.name)}</strong></td></tr>
+        <tr><td>Issued to</td><td><strong>${esc(toName)}${toId ? ' (' + esc(toId) + ')' : ''}</strong></td></tr>
+        <tr><td>By</td><td>${esc(currentUser.email)}</td></tr>
+      </table>`;
+    const overlay = document.getElementById('issue-confirm-modal');
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => overlay.classList.add('show'));
+    const done = val => {
+      overlay.classList.remove('show');
+      setTimeout(() => { overlay.style.display = 'none'; }, 200);
+      resolve(val);
+    };
+    document.getElementById('issue-confirm-ok').onclick     = () => done(true);
+    document.getElementById('issue-confirm-cancel').onclick = () => done(false);
+    overlay.onclick = e => { if (e.target === overlay) done(false); };
+  });
+}
+
+async function voidTransaction(origTx) {
+  const confirmed = await showVoidConfirm(origTx);
+  if (!confirmed) return;
+  try {
+    const itemRef   = doc(db, 'invItems', origTx.itemId);
+    const origTxRef = doc(db, 'invTx', origTx.id);
+    await runTransaction(db, async tx => {
+      const [origSnap, itemSnap] = await Promise.all([tx.get(origTxRef), tx.get(itemRef)]);
+      if (origSnap.data()?.voided) throw new Error('already-voided');
+      const cur      = itemSnap.data()?.currentStock || 0;
+      const delta    = origTx.type === 'out' ? origTx.quantity : -origTx.quantity;
+      const newStock = cur + delta;
+      if (newStock < 0) throw new Error('stock-negative');
+      tx.update(itemRef,   { currentStock: newStock });
+      tx.update(origTxRef, { voided: true, voidedAt: serverTimestamp(), voidedBy: currentUser.uid, voidedByEmail: currentUser.email });
+      const newTxRef = doc(collection(db, 'invTx'));
+      tx.set(newTxRef, {
+        type: 'void', voidOfId: origTx.id,
+        itemId: origTx.itemId, itemName: origTx.itemName,
+        quantity: origTx.quantity, unit: origTx.unit, origType: origTx.type,
+        createdBy: currentUser.uid, createdByEmail: currentUser.email, createdAt: serverTimestamp()
+      });
+    });
+    toast('Transaction voided — stock restored.', 'ok');
+  } catch (e) {
+    if (e.message === 'already-voided')      toast('This transaction was already voided.', 'err');
+    else if (e.message === 'stock-negative') toast('Cannot void: reversing this would make stock negative.', 'err');
+    else { toast('Failed to void transaction. Please try again.', 'err'); console.error(e); }
+  }
+}
+
+function showVoidConfirm(tx) {
+  return new Promise(resolve => {
+    const kind = txKind(tx);
+    const typeLabel = kind === 'out' ? 'Issue (stock out)' : kind === 'returned' ? 'Return to stock' : 'Stock in';
+    const sign = kind === 'out' ? '−' : '+';
+    document.getElementById('void-confirm-body').innerHTML = `
+      <table class="confirm-table">
+        <tr><td>Item</td><td><strong>${esc(tx.itemName || '—')}</strong></td></tr>
+        <tr><td>Type</td><td>${typeLabel}</td></tr>
+        <tr><td>Qty</td><td><strong>${sign}${fmt(tx.quantity)} ${esc(tx.unit || '')}</strong></td></tr>
+        <tr><td>Original by</td><td>${esc(tx.createdByEmail || '—')}</td></tr>
+      </table>
+      <div class="modal-warn" style="margin-top:12px">${window.icon('alert')}<span>Both records remain permanently visible. This cannot be undone.</span></div>`;
+    const overlay = document.getElementById('void-confirm-modal');
+    overlay.style.display = 'flex';
+    requestAnimationFrame(() => overlay.classList.add('show'));
+    const done = val => {
+      overlay.classList.remove('show');
+      setTimeout(() => { overlay.style.display = 'none'; }, 200);
+      resolve(val);
+    };
+    document.getElementById('void-confirm-ok').onclick     = () => done(true);
+    document.getElementById('void-confirm-cancel').onclick = () => done(false);
+    overlay.onclick = e => { if (e.target === overlay) done(false); };
+  });
 }
 
 /* ── Helpers ── */

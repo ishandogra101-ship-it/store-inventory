@@ -24,6 +24,16 @@
       <div class="login-title">Welcome back</div>
       <div class="login-sub">Sign in with your @maruti.co.in account</div>
       <div class="login-err" id="signin-err"></div>
+      <button class="ms-login-btn" id="ms-btn">
+        <svg width="20" height="20" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
+          <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
+          <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
+          <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+        </svg>
+        <span id="ms-btn-label">Sign in with Microsoft</span>
+      </button>
+      <div class="login-divider"><span>or sign in with email</span></div>
       <div class="login-form">
         <div class="mf">
           <label class="ml">Email</label>
@@ -89,7 +99,8 @@ import { initializeApp }                        from 'https://www.gstatic.com/fi
 import { getAuth, onAuthStateChanged,
          signInWithEmailAndPassword,
          createUserWithEmailAndPassword,
-         sendPasswordResetEmail }               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+         sendPasswordResetEmail,
+         OAuthProvider, signInWithPopup }       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 document.getElementById('brand-mark').innerHTML = window.icon('box');
 
@@ -124,6 +135,27 @@ document.getElementById('goto-create').addEventListener('click',  () => showView
 document.getElementById('goto-signin').addEventListener('click',  () => showView('signin'));
 document.getElementById('goto-signin2').addEventListener('click', () => showView('signin'));
 document.getElementById('forgot-link').addEventListener('click',  () => showView('forgot'));
+
+const msProvider = new OAuthProvider('microsoft.com');
+msProvider.setCustomParameters({ tenant: 'maruti.co.in' });
+
+document.getElementById('ms-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('ms-btn');
+  const lbl = document.getElementById('ms-btn-label');
+  showErr('signin-err', '');
+  btn.disabled = true;
+  lbl.textContent = 'Please wait…';
+  try {
+    await signInWithPopup(auth, msProvider);
+    window.location.href = 'index.html';
+  } catch (e) {
+    if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+      showErr('signin-err', friendlyError(e.code));
+    }
+    btn.disabled = false;
+    lbl.textContent = 'Sign in with Microsoft';
+  }
+});
 
 document.getElementById('signin-btn').addEventListener('click', async () => {
   const email = document.getElementById('signin-email').value.trim();
@@ -189,6 +221,9 @@ function friendlyError(code) {
     case 'auth/weak-password':          return 'Password must be at least 6 characters.';
     case 'auth/too-many-requests':      return 'Too many attempts. Please try again later.';
     case 'auth/network-request-failed': return 'Network error — check your connection.';
+    case 'auth/popup-blocked':          return 'Pop-up blocked — allow pop-ups for this site and try again.';
+    case 'auth/account-exists-with-different-credential':
+                                        return 'An account with this email already exists — sign in with email/password instead.';
     default:                            return 'Something went wrong. Please try again.';
   }
 }

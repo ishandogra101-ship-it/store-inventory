@@ -830,10 +830,12 @@ function renderHistory() {
   if (!filtered.length) { empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
 
+  const voidedIds = new Set(allTx.filter(t => t.type === 'void').map(t => t.voidOfId));
+
   filtered.forEach(tx => {
     const kind        = txKind(tx);
     const ts          = tx.createdAt?.toDate ? tx.createdAt.toDate() : new Date();
-    const isVoided    = tx.voided === true;
+    const isVoided    = voidedIds.has(tx.id);
     const isVoidEntry = kind === 'void';
     let badgeCls, badgeIc, qtyCls, sign, meta;
 
@@ -1230,21 +1232,21 @@ function showIssueConfirm({ item, qty, location, toName, toId }) {
 }
 
 async function voidTransaction(origTx) {
+  // Guard: check in-memory (allTx is real-time so this is always current)
+  if (allTx.some(t => t.type === 'void' && t.voidOfId === origTx.id)) {
+    toast('This transaction was already voided.', 'err'); return;
+  }
   const confirmed = await showVoidConfirm(origTx);
   if (!confirmed) return;
   try {
-    const itemRef   = doc(db, 'invItems', origTx.itemId);
-    const origTxRef = doc(db, 'invTx', origTx.id);
+    const itemRef = doc(db, 'invItems', origTx.itemId);
     await runTransaction(db, async tx => {
-      const origSnap = await tx.get(origTxRef);
       const itemSnap = await tx.get(itemRef);
-      if (origSnap.data()?.voided) throw new Error('already-voided');
-      const cur      = itemSnap.data()?.currentStock || 0;
+      const cur      = itemSnap.exists() ? (itemSnap.data()?.currentStock || 0) : 0;
       const delta    = origTx.type === 'out' ? origTx.quantity : -origTx.quantity;
       const newStock = cur + delta;
       if (newStock < 0) throw new Error('stock-negative');
-      tx.update(itemRef,   { currentStock: newStock });
-      tx.update(origTxRef, { voided: true, voidedAt: serverTimestamp(), voidedBy: currentUser.uid, voidedByEmail: currentUser.email });
+      tx.update(itemRef, { currentStock: newStock });
       const newTxRef = doc(collection(db, 'invTx'));
       tx.set(newTxRef, {
         type: 'void', voidOfId: origTx.id,
@@ -1255,8 +1257,7 @@ async function voidTransaction(origTx) {
     });
     toast('Transaction voided — stock restored.', 'ok');
   } catch (e) {
-    if (e.message === 'already-voided')      toast('This transaction was already voided.', 'err');
-    else if (e.message === 'stock-negative') toast('Cannot void: reversing this would make stock negative.', 'err');
+    if (e.message === 'stock-negative') toast('Cannot void: reversing this would make stock negative.', 'err');
     else { toast('Failed to void transaction. Please try again.', 'err'); console.error(e); }
   }
 }

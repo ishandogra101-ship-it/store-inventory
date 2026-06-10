@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ── Variables ── */
 :root{
   --ink:#1a1d29; --ink2:#3a3f52; --ink3:#646882; --ink4:#9499b3;
   --bg:#f6f7f9; --surface:#fff; --border:#e4e7ef;
@@ -19,133 +18,53 @@
   --sidebar-w:248px;
   --r6:6px; --r8:9px; --r10:11px; --r12:13px;
 }
-
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;font-size:15px;}
-body{
-  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
-  background:var(--bg); color:var(--ink);
-  -webkit-font-smoothing:antialiased;
-}
-
-/* ── LAYOUT ── */
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
 .layout{display:flex;min-height:100vh;}
-.sidebar{
-  width:var(--sidebar-w);flex-shrink:0;
-  background:var(--surface);border-right:1px solid var(--border);
-  position:sticky;top:0;height:100vh;overflow-y:auto;
-  padding:28px 0 40px;
-}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 0 40px;}
 .main{flex:1;min-width:0;padding:48px 60px 80px;max-width:860px;}
-
-/* ── SIDEBAR ── */
-.sidebar-logo{
-  display:flex;align-items:center;gap:9px;padding:0 20px 22px;
-  border-bottom:1px solid var(--border);margin-bottom:18px;text-decoration:none;
-}
-.sidebar-logo-mark{
-  width:30px;height:30px;border-radius:9px;
-  background:var(--primary);color:#fff;display:grid;place-items:center;flex-shrink:0;
-  box-shadow:0 3px 8px rgba(79,70,229,.32);
-}
+.sidebar-logo{display:flex;align-items:center;gap:9px;padding:0 20px 22px;border-bottom:1px solid var(--border);margin-bottom:18px;text-decoration:none;}
+.sidebar-logo-mark{width:30px;height:30px;border-radius:9px;background:var(--primary);color:#fff;display:grid;place-items:center;flex-shrink:0;box-shadow:0 3px 8px rgba(79,70,229,.32);}
 .sidebar-logo-mark svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .sidebar-logo-name{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.02em;}
 .sidebar-logo-name span{color:var(--ink3);font-weight:500;}
-
 .toc-group{margin-bottom:6px;}
 .toc-heading{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink4);padding:0 20px 6px;}
-.toc-link{
-  display:flex;align-items:center;gap:9px;padding:7px 20px;
-  font-size:13px;font-weight:600;color:var(--ink3);text-decoration:none;
-  transition:color .15s,background .15s;border-left:2px solid transparent;margin-left:-1px;
-}
+.toc-link{display:flex;align-items:center;gap:9px;padding:7px 20px;font-size:13px;font-weight:600;color:var(--ink3);text-decoration:none;transition:color .15s,background .15s;border-left:2px solid transparent;margin-left:-1px;}
 .toc-link:hover{color:var(--ink);background:var(--bg);}
 .toc-link.active{color:var(--primary);background:var(--primaryS);border-left-color:var(--primary);}
 .toc-link svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
-
-/* ── PRINT BUTTON ── */
-.print-btn{
-  position:fixed;top:20px;right:24px;
-  display:inline-flex;align-items:center;gap:8px;
-  font-family:inherit;font-size:13px;font-weight:700;
-  padding:10px 18px;border-radius:var(--r10);border:1.5px solid var(--border);
-  background:var(--surface);color:var(--ink2);cursor:pointer;
-  box-shadow:0 2px 10px rgba(20,24,48,.1);transition:all .17s ease;z-index:100;
-}
+.toc-link .admin-pip{font-size:9px;font-weight:800;background:var(--redS);color:var(--redD);padding:1px 5px;border-radius:100px;margin-left:auto;flex-shrink:0;}
+.print-btn{position:fixed;top:20px;right:24px;display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-size:13px;font-weight:700;padding:10px 18px;border-radius:var(--r10);border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);cursor:pointer;box-shadow:0 2px 10px rgba(20,24,48,.1);transition:all .17s ease;z-index:100;}
 .print-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 4px 14px rgba(79,70,229,.3);}
 .print-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-
-/* ── CONTENT TYPOGRAPHY ── */
 .cover{margin-bottom:52px;padding-bottom:40px;border-bottom:1px solid var(--border);}
-.cover-tag{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
-  color:var(--primary);background:var(--primaryS);
-  padding:5px 12px;border-radius:100px;margin-bottom:18px;
-}
-.cover-title{
-  font-family:'Space Grotesk',sans-serif;font-size:38px;font-weight:700;
-  color:var(--ink);letter-spacing:-.03em;line-height:1.1;margin-bottom:14px;
-}
+.cover-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--primary);background:var(--primaryS);padding:5px 12px;border-radius:100px;margin-bottom:18px;}
+.cover-title{font-family:'Space Grotesk',sans-serif;font-size:38px;font-weight:700;color:var(--ink);letter-spacing:-.03em;line-height:1.1;margin-bottom:14px;}
 .cover-title span{color:var(--primary);}
 .cover-sub{font-size:16px;color:var(--ink3);line-height:1.6;font-weight:500;max-width:560px;margin-bottom:28px;}
 .cover-chips{display:flex;flex-wrap:wrap;gap:8px;}
-.chip{font-size:12px;font-weight:600;color:var(--ink3);background:var(--surface);
-  border:1px solid var(--border);padding:5px 12px;border-radius:100px;}
-
+.chip{font-size:12px;font-weight:600;color:var(--ink3);background:var(--surface);border:1px solid var(--border);padding:5px 12px;border-radius:100px;}
 section{margin-bottom:52px;scroll-margin-top:24px;}
-.sec-label{
-  display:inline-flex;align-items:center;gap:7px;
-  font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
-  color:var(--primary);margin-bottom:10px;
-}
+.sec-label{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--primary);margin-bottom:10px;}
 .sec-label svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-h2{
-  font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;
-  color:var(--ink);letter-spacing:-.02em;margin-bottom:16px;
-  display:flex;align-items:center;gap:10px;
-}
-h2 .num{
-  width:32px;height:32px;border-radius:var(--r8);background:var(--primaryS);
-  color:var(--primary);font-size:14px;font-weight:800;display:grid;place-items:center;flex-shrink:0;
-}
-h3{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:var(--ink);
-  margin:28px 0 10px;letter-spacing:-.01em;}
+.sec-label .admin-tag{font-size:10px;font-weight:800;background:var(--redS);color:var(--redD);padding:2px 7px;border-radius:100px;margin-left:4px;}
+h2{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--ink);letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+h2 .num{width:32px;height:32px;border-radius:var(--r8);background:var(--primaryS);color:var(--primary);font-size:14px;font-weight:800;display:grid;place-items:center;flex-shrink:0;}
+h3{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;color:var(--ink);margin:28px 0 10px;letter-spacing:-.01em;}
 p{font-size:14px;color:var(--ink2);line-height:1.7;margin-bottom:14px;font-weight:500;}
 p:last-child{margin-bottom:0;}
 strong{color:var(--ink);font-weight:700;}
 a{color:var(--primary);font-weight:600;text-decoration:none;}
 a:hover{text-decoration:underline;}
-
-/* ── STEP LIST ── */
 ol.steps{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
-ol.steps li{
-  display:flex;align-items:flex-start;gap:12px;
-  font-size:14px;color:var(--ink2);line-height:1.6;font-weight:500;
-}
-ol.steps li::before{
-  content:attr(data-n);
-  min-width:26px;height:26px;border-radius:100px;
-  background:var(--primary);color:#fff;
-  font-size:12px;font-weight:800;display:grid;place-items:center;
-  flex-shrink:0;margin-top:1px;
-}
-
+ol.steps li{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--ink2);line-height:1.6;font-weight:500;}
+ol.steps li::before{content:attr(data-n);min-width:26px;height:26px;border-radius:100px;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;flex-shrink:0;margin-top:1px;}
 ul.checks{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
-ul.checks li{
-  display:flex;align-items:flex-start;gap:10px;
-  font-size:14px;color:var(--ink2);line-height:1.6;font-weight:500;
-}
-ul.checks li::before{
-  content:'';width:16px;height:16px;flex-shrink:0;margin-top:4px;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7.5' fill='%23e3f5ee' stroke='%230f9d6e' stroke-width='1'/%3E%3Cpolyline points='4.5 8.5 7 11 11.5 5.5' fill='none' stroke='%230f9d6e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
-}
-
-/* ── CALLOUTS ── */
-.callout{
-  display:flex;gap:12px;padding:14px 16px;border-radius:var(--r10);margin-bottom:16px;
-  border:1px solid transparent;
-}
+ul.checks li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink2);line-height:1.6;font-weight:500;}
+ul.checks li::before{content:'';width:16px;height:16px;flex-shrink:0;margin-top:4px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7.5' fill='%23e3f5ee' stroke='%230f9d6e' stroke-width='1'/%3E%3Cpolyline points='4.5 8.5 7 11 11.5 5.5' fill='none' stroke='%230f9d6e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;}
+.callout{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r10);margin-bottom:16px;border:1px solid transparent;}
 .callout-ico{width:20px;height:20px;flex-shrink:0;margin-top:1px;}
 .callout-ico svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .callout-body{font-size:13.5px;line-height:1.6;font-weight:500;}
@@ -156,88 +75,35 @@ ul.checks li::before{
 .callout.warn .callout-body{color:#78520a;}
 .callout.info{background:var(--blueS);border-color:rgba(59,130,246,.2);color:var(--blue);}
 .callout.info .callout-body{color:#1d4ed8;}
-
-/* ── TABLE ── */
+.callout.danger{background:var(--redS);border-color:rgba(220,79,87,.25);color:var(--redD);}
+.callout.danger .callout-body{color:var(--redD);}
 .tbl-wrap{overflow-x:auto;margin-bottom:16px;}
 table{width:100%;border-collapse:collapse;font-size:13.5px;}
-thead th{
-  font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
-  color:var(--ink3);padding:10px 14px;text-align:left;
-  background:var(--bg);border-bottom:2px solid var(--border);white-space:nowrap;
-}
-tbody td{
-  padding:11px 14px;color:var(--ink2);font-weight:500;line-height:1.5;
-  border-bottom:1px solid var(--border);vertical-align:top;
-}
+thead th{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);padding:10px 14px;text-align:left;background:var(--bg);border-bottom:2px solid var(--border);white-space:nowrap;}
+tbody td{padding:11px 14px;color:var(--ink2);font-weight:500;line-height:1.5;border-bottom:1px solid var(--border);vertical-align:top;}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover td{background:var(--bg);}
 td strong{color:var(--ink);}
-td code{background:var(--bg);border:1px solid var(--border);border-radius:5px;
-  padding:2px 6px;font-size:12px;font-family:monospace;color:var(--ink2);}
-
-/* ── BADGE ── */
-.badge{
-  display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;
-  border-radius:100px;letter-spacing:.02em;white-space:nowrap;
-}
+td code{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-size:12px;font-family:monospace;color:var(--ink2);}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:100px;letter-spacing:.02em;white-space:nowrap;}
 .badge-green{background:var(--greenS);color:var(--greenD);}
 .badge-amber{background:var(--amberS);color:var(--amberD);}
 .badge-red{background:var(--redS);color:var(--redD);}
 .badge-blue{background:var(--blueS);color:var(--blue);}
 .badge-primary{background:var(--primaryS);color:var(--primary);}
-
-/* ── DIVIDER ── */
 .divider{height:1px;background:var(--border);margin:40px 0;}
-
-/* ── FAQ ── */
-details{
-  border:1px solid var(--border);border-radius:var(--r10);margin-bottom:10px;
-  background:var(--surface);overflow:hidden;
-}
+details{border:1px solid var(--border);border-radius:var(--r10);margin-bottom:10px;background:var(--surface);overflow:hidden;}
 details[open]{box-shadow:0 4px 16px rgba(24,28,58,.06);}
-summary{
-  font-size:14px;font-weight:700;color:var(--ink);padding:14px 18px;cursor:pointer;
-  list-style:none;display:flex;justify-content:space-between;align-items:center;
-  gap:12px;
-}
+summary{font-size:14px;font-weight:700;color:var(--ink);padding:14px 18px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;}
 summary::-webkit-details-marker{display:none;}
-summary::after{
-  content:'';width:18px;height:18px;flex-shrink:0;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9' fill='none' stroke='%239499b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
-  transition:transform .18s ease;
-}
+summary::after{content:'';width:18px;height:18px;flex-shrink:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9' fill='none' stroke='%239499b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;transition:transform .18s ease;}
 details[open] summary::after{transform:rotate(180deg);}
 details[open] summary{border-bottom:1px solid var(--border);}
 .faq-body{padding:14px 18px;font-size:13.5px;color:var(--ink2);line-height:1.65;font-weight:500;}
 .faq-body p{margin-bottom:8px;}
 .faq-body p:last-child{margin-bottom:0;}
-
-/* ── RESPONSIVE ── */
-@media(max-width:860px){
-  .sidebar{display:none;}
-  .main{padding:28px 22px 60px;}
-  .print-btn{top:14px;right:14px;padding:8px 14px;font-size:12px;}
-  .cover-title{font-size:28px;}
-}
-
-/* ── PRINT ── */
-@media print{
-  .sidebar,.print-btn{display:none !important;}
-  .layout{display:block;}
-  .main{padding:0;max-width:none;}
-  body{font-size:11pt;background:#fff;}
-  .cover-title{font-size:26pt;}
-  h2{font-size:18pt;page-break-before:always;margin-top:0;}
-  h2:first-of-type{page-break-before:avoid;}
-  h3{font-size:13pt;}
-  section{margin-bottom:0;page-break-inside:avoid;}
-  .cover{page-break-after:always;padding-bottom:0;border:none;}
-  .callout{border:1px solid #ccc !important;background:#f9f9f9 !important;}
-  details{border:1px solid #ccc;}
-  details:not([open]){display:none;}
-  a{color:inherit;text-decoration:none;}
-  .tbl-wrap{page-break-inside:avoid;}
-}
+@media(max-width:860px){.sidebar{display:none;}.main{padding:28px 22px 60px;}.print-btn{top:14px;right:14px;padding:8px 14px;font-size:12px;}.cover-title{font-size:28px;}}
+@media print{.sidebar,.print-btn{display:none !important;}.layout{display:block;}.main{padding:0;max-width:none;}body{font-size:11pt;background:#fff;}.cover-title{font-size:26pt;}h2{font-size:18pt;page-break-before:always;margin-top:0;}h2:first-of-type{page-break-before:avoid;}h3{font-size:13pt;}section{margin-bottom:0;page-break-inside:avoid;}.cover{page-break-after:always;padding-bottom:0;border:none;}.callout{border:1px solid #ccc !important;background:#f9f9f9 !important;}details{border:1px solid #ccc;}details:not([open]){display:none;}a{color:inherit;text-decoration:none;}.tbl-wrap{page-break-inside:avoid;}}
 </style>
 </head>
 <body>
@@ -249,7 +115,6 @@ details[open] summary{border-bottom:1px solid var(--border);}
 
 <div class="layout">
 
-  <!-- ── SIDEBAR ── -->
   <nav class="sidebar" aria-label="Contents">
     <a class="sidebar-logo" href="../">
       <div class="sidebar-logo-mark">
@@ -264,7 +129,7 @@ details[open] summary{border-bottom:1px solid var(--border);}
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Overview
       </a>
       <a class="toc-link" href="#setup">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>First-time Setup
+        <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>First-time Setup
       </a>
     </div>
 
@@ -274,29 +139,36 @@ details[open] summary{border-bottom:1px solid var(--border);}
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Stock Dashboard
       </a>
       <a class="toc-link" href="#addstock">
-        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8"/><polyline points="7.5 4.21 12 6.81 16.5 4.21"/><polyline points="7.5 19.79 7.5 14.6 3 12"/><polyline points="21 12 16.5 14.6 16.5 19.79"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Adding Stock
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adding Stock
       </a>
       <a class="toc-link" href="#returns">
         <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.18"/></svg>Recording Returns
       </a>
       <a class="toc-link" href="#issue">
-        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Issuing Items
-      </a>
-      <a class="toc-link" href="#history">
-        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>History Log
+        <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>Issuing Items
       </a>
     </div>
 
     <div class="toc-group">
-      <div class="toc-heading">Reports & Settings</div>
+      <div class="toc-heading">Records &amp; Reports</div>
+      <a class="toc-link" href="#history">
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>History
+      </a>
+      <a class="toc-link" href="#logs">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>Activity Log
+      </a>
       <a class="toc-link" href="#stats">
         <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Statistics
       </a>
-      <a class="toc-link" href="#settings">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings
-      </a>
+    </div>
+
+    <div class="toc-group">
+      <div class="toc-heading">Admin</div>
       <a class="toc-link" href="#master">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Master (Access Control)
+        <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>Master Tab
+      </a>
+      <a class="toc-link" href="#settings">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Settings Tab <span class="admin-pip">Admin</span>
       </a>
       <a class="toc-link" href="#faq">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>FAQ
@@ -304,22 +176,21 @@ details[open] summary{border-bottom:1px solid var(--border);}
     </div>
   </nav>
 
-  <!-- ── MAIN CONTENT ── -->
   <main class="main">
 
-    <!-- Cover -->
     <div class="cover" id="top">
       <div class="cover-tag">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
         Store Inventory
       </div>
       <div class="cover-title">User <span>Handbook</span></div>
-      <div class="cover-sub">Everything you need to receive stock, issue items, track returns, and report on inventory — in one place.</div>
+      <div class="cover-sub">Everything you need to receive stock, issue items, track returns, export reports, and manage the system — in one place.</div>
       <div class="cover-chips">
         <span class="chip">Firebase-backed</span>
-        <span class="chip">Multi-user</span>
+        <span class="chip">Multi-user real-time</span>
         <span class="chip">Works on any device</span>
-        <span class="chip">@maruti.co.in accounts</span>
+        <span class="chip">@maruti.co.in accounts only</span>
+        <span class="chip">Full audit trail</span>
       </div>
     </div>
 
@@ -331,42 +202,45 @@ details[open] summary{border-bottom:1px solid var(--border);}
       </div>
       <h2><span class="num">1</span>Overview</h2>
       <p>Store Inventory is a web app for tracking housekeeping and maintenance consumables. It records every <strong>stock-in</strong> (received from a supplier), every <strong>issue-out</strong> (sent to a department or person), and <strong>returns</strong> (unused stock brought back). All data is shared in real time — anything one user does is instantly visible to everyone else.</p>
-      <p>The app is split into four areas:</p>
+      <p>The app is organised into tabs. Scroll the tab bar left or right on mobile:</p>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Area</th><th>What it's for</th></tr></thead>
+          <thead><tr><th>Tab</th><th>Who can see it</th><th>What it's for</th></tr></thead>
           <tbody>
-            <tr><td><strong>Stock</strong></td><td>See current quantities. Items below their minimum threshold are highlighted in amber.</td></tr>
-            <tr><td><strong>Add Stock / Issue / History</strong></td><td>Record new transactions — tabs on the same screen.</td></tr>
-            <tr><td><strong>Statistics</strong></td><td>KPI cards, charts, and Excel export.</td></tr>
-            <tr><td><strong>Settings</strong></td><td>Manage the master lists: items, suppliers, and locations.</td></tr>
+            <tr><td><strong>Stock</strong></td><td>Everyone</td><td>Live inventory dashboard — current quantities, low-stock alerts, search.</td></tr>
+            <tr><td><strong>Add Stock</strong></td><td>Everyone</td><td>Record new deliveries from suppliers or returns of unused stock.</td></tr>
+            <tr><td><strong>Issue Item</strong></td><td>Everyone</td><td>Record stock going out — reduces quantity and creates an audit entry.</td></tr>
+            <tr><td><strong>History</strong></td><td>Everyone</td><td>Full transaction list. Admins can void or delete records from here.</td></tr>
+            <tr><td><strong>Logs</strong></td><td>Everyone</td><td>Activity audit trail — every create, edit, delete, and access change.</td></tr>
+            <tr><td><strong>Master</strong></td><td>Everyone</td><td>Manage items, suppliers, and locations. Bulk import from Excel.</td></tr>
+            <tr><td><strong>Settings</strong></td><td>Admins only</td><td>Access control — approve users, manage admin roles.</td></tr>
           </tbody>
         </table>
       </div>
       <div class="callout tip">
         <div class="callout-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-        <div class="callout-body"><strong>Sign-in required</strong>Only @maruti.co.in email addresses can log in. Your account is shared with everyone on the team — whoever logs in sees the same live data.</div>
+        <div class="callout-body"><strong>Sign-in required</strong>Only <code>@maruti.co.in</code> email addresses can log in, and your account must be approved by an admin. Contact your admin if you see a "not approved" message.</div>
       </div>
     </section>
 
-    <!-- 2. First-time setup -->
+    <!-- 2. First-time Setup -->
     <section id="setup">
       <div class="sec-label">
-        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
         Section 2
       </div>
       <h2><span class="num">2</span>First-time Setup</h2>
-      <p>Before you can add stock or issue items, you need a master list of <strong>items</strong>, <strong>suppliers</strong>, and <strong>locations</strong>. Do this once in Settings.</p>
+      <p>Before you can add stock or issue items you need a master list of <strong>items</strong>, <strong>suppliers</strong>, and <strong>locations</strong>. Do this once in the <strong>Master</strong> tab.</p>
       <ol class="steps">
-        <li data-n="1">Open <strong>Settings</strong> (the gear icon in the top bar or the Settings tab on mobile).</li>
+        <li data-n="1">Open the <strong>Master</strong> tab.</li>
         <li data-n="2">Under <strong>Items</strong>, enter an item name (e.g. Phenyl), choose a unit (Litre, Kg, Pieces…), and optionally set a <strong>Min. Threshold</strong> — the quantity at which the stock card turns amber as a reorder alert. Click <strong>+ Add</strong>.</li>
-        <li data-n="3">Repeat for all items you want to track.</li>
+        <li data-n="3">Repeat for all items. If you have many items, use <strong>Bulk import from Excel / CSV</strong> (see Section 10).</li>
         <li data-n="4">Under <strong>Suppliers</strong>, add each vendor you buy from (e.g. "ABC Chemicals").</li>
         <li data-n="5">Under <strong>Locations</strong>, add every department, block, or area that stock gets issued to (e.g. "Block A Washroom", "Building 14 Office").</li>
       </ol>
       <div class="callout warn">
         <div class="callout-ico"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-        <div class="callout-body"><strong>Duplicate protection</strong>The app blocks near-duplicates — "ABC Chemicals", "abc chemicals" and "A B C Chemicals" are all treated as the same name. If you see a "Already exists as …" toast, check the existing list before adding.</div>
+        <div class="callout-body"><strong>Duplicate protection</strong>The app blocks near-duplicates — "ABC Chemicals", "abc chemicals" and "A B C Chemicals" are all treated as the same name. If you see an "Already exists" toast, check the existing list before adding.</div>
       </div>
     </section>
 
@@ -377,29 +251,28 @@ details[open] summary{border-bottom:1px solid var(--border);}
         Section 3
       </div>
       <h2><span class="num">3</span>Stock Dashboard</h2>
-      <p>The Stock tab is your live inventory view. It loads immediately when you open the app.</p>
+      <p>The <strong>Stock</strong> tab is your live inventory view. It loads immediately when you open the app and updates in real time as transactions are recorded.</p>
 
       <h3>Search</h3>
-      <p>Type in the search box at the top to filter items by name in real time. The rest of the page updates as you type.</p>
+      <p>Type in the search box to filter items by name in real time.</p>
 
-      <h3>Attention band</h3>
-      <p>Items at or below their minimum threshold appear in an <strong>amber-highlighted band</strong> at the top. This is your reorder list — the exact items that need action right now.</p>
+      <h3>Needs Attention band</h3>
+      <p>Items at or below their minimum threshold appear in an <strong>amber-highlighted band</strong> at the top, sorted by severity. This is your reorder list — the exact items that need action right now. Items with zero stock appear before those that are merely low.</p>
 
       <h3>Stock cards</h3>
-      <p>Each item is shown as a card. The colour of the quantity number and the bar at the bottom tells you the status at a glance:</p>
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>Colour</th><th>Meaning</th><th>When it triggers</th></tr></thead>
           <tbody>
-            <tr><td><span class="badge badge-green">Green</span></td><td>Stock is healthy</td><td>Quantity is above the minimum threshold</td></tr>
-            <tr><td><span class="badge badge-amber">Amber</span></td><td>Running low</td><td>Quantity is at or below the minimum threshold</td></tr>
-            <tr><td><span class="badge badge-red">Out of stock</span></td><td>Nothing left</td><td>Quantity is zero</td></tr>
+            <tr><td><span class="badge badge-green">Green</span></td><td>Healthy</td><td>Quantity is above the minimum threshold</td></tr>
+            <tr><td><span class="badge badge-amber">Amber</span></td><td>Running low</td><td>At or below the minimum threshold</td></tr>
+            <tr><td><span class="badge badge-red">Out of stock</span></td><td>Zero</td><td>Quantity is exactly zero</td></tr>
           </tbody>
         </table>
       </div>
       <div class="callout info">
         <div class="callout-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-        <div class="callout-body"><strong>No threshold set?</strong>Items without a threshold use a default of 10 units to determine amber vs green. Set a threshold in Settings to tailor alerts to each item.</div>
+        <div class="callout-body"><strong>No threshold set?</strong>Items without a threshold use a default of 10 units for the amber alert. Set threshold to 0 in the Master tab to disable alerts for that item entirely.</div>
       </div>
     </section>
 
@@ -414,11 +287,10 @@ details[open] summary{border-bottom:1px solid var(--border);}
       <ol class="steps">
         <li data-n="1">Click the <strong>Add Stock</strong> tab.</li>
         <li data-n="2">Select the <strong>Item</strong> from the dropdown.</li>
-        <li data-n="3">Select the <strong>Supplier</strong>. (To record a return instead, see Section 5.)</li>
-        <li data-n="4">Enter the <strong>Quantity</strong> received.</li>
-        <li data-n="5">Optionally enter a <strong>Bill / Invoice number</strong> for reference.</li>
-        <li data-n="6">Check or adjust the <strong>Date</strong> (defaults to today).</li>
-        <li data-n="7">Click <strong>Add to Stock</strong>.</li>
+        <li data-n="3">Enter the <strong>Quantity</strong> received.</li>
+        <li data-n="4">Select the <strong>Source / Supplier</strong>. To record a return instead, see Section 5.</li>
+        <li data-n="5">Enter the <strong>Bill / Invoice number</strong> for reference.</li>
+        <li data-n="6">Click <strong>Add to Stock</strong>.</li>
       </ol>
       <p>The item's stock card updates immediately and a new record appears in the History tab.</p>
     </section>
@@ -430,90 +302,134 @@ details[open] summary{border-bottom:1px solid var(--border);}
         Section 5
       </div>
       <h2><span class="num">5</span>Recording Returns</h2>
-      <p>Sometimes stock is issued to a location but not actually used — for example, extra cleaning supplies that come back to the store. This is <strong>not</strong> a new purchase; it's a return, and it should be tracked separately so your statistics stay accurate.</p>
+      <p>Sometimes stock is issued to a location but not actually used — for example, extra cleaning supplies brought back to the store. This is <strong>not</strong> a new purchase; track it as a return so your statistics stay accurate.</p>
       <ol class="steps">
         <li data-n="1">Click the <strong>Add Stock</strong> tab.</li>
         <li data-n="2">Select the <strong>Item</strong> that was returned.</li>
-        <li data-n="3">In the <strong>Supplier</strong> dropdown, choose <strong>"Returned (not used)"</strong>.</li>
-        <li data-n="4">The Bill field is replaced by a <strong>Returned From</strong> location picker — select where the stock came back from.</li>
-        <li data-n="5">Enter the <strong>Quantity</strong> returned.</li>
+        <li data-n="3">Enter the <strong>Quantity</strong> returned.</li>
+        <li data-n="4">In the <strong>Source</strong> dropdown, choose <strong>"Returned (not used)"</strong>.</li>
+        <li data-n="5">The Bill field is replaced by a <strong>Returned From</strong> location picker — select where the stock came back from.</li>
         <li data-n="6">Click <strong>Add to Stock</strong>.</li>
       </ol>
       <div class="callout tip">
         <div class="callout-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-        <div class="callout-body"><strong>Why does this matter?</strong>Returns are shown separately in Statistics under the "Returned" KPI and the timeline chart, so you can see the difference between what was genuinely consumed and what was brought back.</div>
+        <div class="callout-body"><strong>Why does this matter?</strong>Returns are shown separately in Statistics so you can see the difference between what was genuinely consumed and what was brought back.</div>
       </div>
     </section>
 
     <!-- 6. Issuing Items -->
     <section id="issue">
       <div class="sec-label">
-        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
         Section 6
       </div>
       <h2><span class="num">6</span>Issuing Items</h2>
-      <p>Use the <strong>Issue Item</strong> tab to record stock going out — sent to a department, person, or location. This decreases the item's current quantity.</p>
+      <p>Use the <strong>Issue Item</strong> tab to record stock going out. This decreases the item's current quantity and creates an audit record with the recipient's name and a mandatory reason.</p>
       <ol class="steps">
         <li data-n="1">Click the <strong>Issue Item</strong> tab.</li>
         <li data-n="2">Select the <strong>Item</strong>.</li>
-        <li data-n="3">Select the <strong>Location</strong> the item is going to.</li>
-        <li data-n="4">Enter the <strong>Quantity</strong>.</li>
-        <li data-n="5">Enter the <strong>Issued To — Name</strong> (the person receiving the items). This field is required.</li>
+        <li data-n="3">Enter the <strong>Quantity</strong>.</li>
+        <li data-n="4">Select the <strong>Location</strong> the item is going to.</li>
+        <li data-n="5">Enter the <strong>Issued To — Name</strong> of the person receiving the items. <strong>Required.</strong></li>
         <li data-n="6">Optionally enter the <strong>Employee ID</strong> for a more precise record.</li>
-        <li data-n="7">Check the <strong>Date</strong> and click <strong>Issue</strong>.</li>
+        <li data-n="7">Enter a <strong>Notes / Reason</strong> — e.g. "Routine floor cleaning", "Equipment maintenance repair". <strong>Required.</strong></li>
+        <li data-n="8">Click <strong>Issue Item</strong>.</li>
       </ol>
       <div class="callout tip">
         <div class="callout-ico"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="callout-body"><strong>Confirmation screen before every issue</strong>After clicking Issue, a summary popup shows the item, quantity, location, recipient, and your name. Review it carefully and click <em>Confirm Issue</em> to proceed — or <em>Edit</em> to go back and fix a mistake. This prevents accidental wrong-quantity entries.</div>
+        <div class="callout-body"><strong>Confirmation before every issue</strong>After clicking Issue Item, a summary popup shows the item, quantity, location, recipient, notes, and your email. Review carefully and click <em>Issue Item</em> to confirm — or <em>← Edit</em> to go back and fix a mistake. This prevents accidental wrong-quantity entries.</div>
       </div>
       <div class="callout warn">
         <div class="callout-ico"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-        <div class="callout-body"><strong>Cannot issue more than current stock</strong>The form will block submission if the quantity exceeds what's available. Add stock first, then issue.</div>
+        <div class="callout-body"><strong>Cannot issue more than current stock</strong>The form blocks submission if the quantity exceeds what is available. Add stock first, then issue.</div>
       </div>
     </section>
 
     <!-- 7. History -->
     <section id="history">
       <div class="sec-label">
-        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
         Section 7
       </div>
-      <h2><span class="num">7</span>History Log</h2>
-      <p>The <strong>History</strong> tab shows every transaction in reverse-chronological order. Use the filter pills to narrow down:</p>
+      <h2><span class="num">7</span>History</h2>
+      <p>The <strong>History</strong> tab shows every transaction in reverse-chronological order. Each row shows the item, quantity, supplier / location / person involved, any notes, <strong>who created the entry</strong> (email), and the timestamp.</p>
+
+      <h3>Filters</h3>
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>Filter</th><th>Shows</th></tr></thead>
           <tbody>
-            <tr><td><span class="badge badge-primary">All</span></td><td>Every transaction</td></tr>
-            <tr><td><span class="badge badge-green">Received</span></td><td>Stock received from suppliers</td></tr>
-            <tr><td><span class="badge badge-amber">Issued</span></td><td>Stock sent out to locations / people</td></tr>
-            <tr><td><span class="badge badge-blue">Returned</span></td><td>Unused stock brought back to store</td></tr>
+            <tr><td><span class="badge badge-primary">All</span></td><td>Every transaction including void reversals</td></tr>
+            <tr><td><span class="badge badge-green">Stock In</span></td><td>Stock received from suppliers</td></tr>
+            <tr><td><span class="badge badge-blue">Returns</span></td><td>Unused stock brought back to store</td></tr>
+            <tr><td><span class="badge badge-amber">Issues</span></td><td>Stock sent out to locations / people</td></tr>
           </tbody>
         </table>
       </div>
-      <p>Each row shows the item name, quantity, supplier / location / person involved, <strong>who created the entry</strong> (the logged-in user's email), and the timestamp.</p>
 
-      <h3>Voiding a Wrong Transaction</h3>
-      <p>If a transaction was entered by mistake, click the <strong>Void</strong> button on that row. A confirmation dialog shows the details — clicking <em>Void Transaction</em> will:</p>
+      <h3>Exporting</h3>
+      <p>Click the <strong>Export</strong> button (top-right of the History tab) to download <code>inventory-history-YYYY-MM-DD.xlsx</code>. The file includes every column: Date, Type, Item, Quantity, Unit, Supplier, Bill No, Location, Issued To, Employee ID, Notes, Voided status, and the user who created the entry (email and UID).</p>
+
+      <h3>Voiding a Wrong Transaction <span class="badge badge-red">Admin only</span></h3>
+      <p>If a transaction was entered by mistake, an admin can click the <strong>Void</strong> button on that row. A confirmation dialog shows the details. On confirming, the system will:</p>
       <ul class="checks">
         <li>Reverse the stock change (e.g. an incorrect issue restores the quantity).</li>
-        <li>Mark the original entry with a red <strong>VOIDED</strong> label.</li>
+        <li>Mark the original row with a red <strong>VOIDED</strong> badge.</li>
         <li>Create a new <strong>REVERSAL</strong> entry recording who voided it and when.</li>
       </ul>
       <div class="callout warn">
         <div class="callout-ico"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-        <div class="callout-body"><strong>Nothing is ever deleted</strong>Both the original and the reversal entry stay in the log permanently. This ensures a complete, tamper-evident audit trail. Void entries only appear in the <em>All</em> filter view.</div>
+        <div class="callout-body"><strong>Nothing is ever deleted by a Void</strong>Both the original and the reversal entry stay in the log permanently. Void entries only appear in the <em>All</em> filter view.</div>
+      </div>
+
+      <h3>Hard Delete <span class="badge badge-red">Admin only</span></h3>
+      <p>The trash icon on each row lets an admin permanently remove a transaction record. <strong>Stock is not adjusted</strong> — hard delete is purely for removing incorrect test or dummy entries. The Activity Log (Logs tab) records every hard delete with the admin's identity.</p>
+      <div class="callout danger">
+        <div class="callout-ico"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="callout-body"><strong>Hard delete is permanent and does not adjust stock</strong>Use Void when you need the stock corrected. Use hard delete only for records that should never have existed (e.g. a duplicate test entry).</div>
       </div>
     </section>
 
-    <!-- 8. Statistics -->
+    <!-- 8. Activity Log -->
+    <section id="logs">
+      <div class="sec-label">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+        Section 8
+      </div>
+      <h2><span class="num">8</span>Activity Log</h2>
+      <p>The <strong>Logs</strong> tab is a full audit trail. Every write action in the system — big or small — is automatically recorded here with the actor's email, Firebase UID, a human-readable description, and an exact timestamp. Records cannot be edited or deleted.</p>
+
+      <h3>What gets logged</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Badge</th><th>Actions included</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-primary">Item Added / Edited / Deleted</span></td><td>Creating, editing name/unit/threshold, or deleting an item</td></tr>
+            <tr><td><span class="badge badge-amber">Supplier / Location</span></td><td>Adding, editing name, or removing a supplier or location</td></tr>
+            <tr><td><span class="badge badge-blue">Stock In / Return / Issue / Voided / Deleted</span></td><td>Every transaction and any admin correction to it</td></tr>
+            <tr><td><span class="badge badge-green">User Added / Removed / Admin Changed</span></td><td>Any change to the access control list</td></tr>
+            <tr><td><span class="badge badge-primary">Bulk Import</span></td><td>Excel bulk import with item count</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Exporting</h3>
+      <p>Click the <strong>Export</strong> button (top-right of the Logs tab) to download <code>inventory-logs-YYYY-MM-DD.xlsx</code>. Columns: Date, Action, Detail, By (Email), By (UID).</p>
+
+      <div class="callout tip">
+        <div class="callout-ico"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="callout-body"><strong>Accountability is built in</strong>Every entry stores the user's Firebase UID — even if someone changes their email, the UID always points back to the same account. Use this tab to resolve any dispute about who did what.</div>
+      </div>
+    </section>
+
+    <!-- 9. Statistics -->
     <section id="stats">
       <div class="sec-label">
         <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        Section 8
+        Section 9
       </div>
-      <h2><span class="num">8</span>Statistics</h2>
-      <p>The <strong>Statistics</strong> page gives you a bird's-eye view of stock health and usage patterns.</p>
+      <h2><span class="num">9</span>Statistics</h2>
+      <p>The <strong>Statistics</strong> page (link in the top nav bar) gives you a bird's-eye view of stock health and usage patterns.</p>
 
       <h3>KPI Cards</h3>
       <div class="tbl-wrap">
@@ -527,8 +443,8 @@ details[open] summary{border-bottom:1px solid var(--border);}
             <tr><td><strong>Low Stock</strong></td><td>Items currently at or below their minimum threshold</td></tr>
             <tr><td><strong>Out of Stock</strong></td><td>Items with zero quantity</td></tr>
             <tr><td><strong>Transactions</strong></td><td>Total number of stock movement records</td></tr>
-            <tr><td><strong>Locations</strong></td><td>Number of distinct locations that have received stock</td></tr>
-            <tr><td><strong>People</strong></td><td>Number of distinct individuals items have been issued to</td></tr>
+            <tr><td><strong>Locations</strong></td><td>Distinct locations that have received stock</td></tr>
+            <tr><td><strong>People</strong></td><td>Distinct individuals items have been issued to</td></tr>
           </tbody>
         </table>
       </div>
@@ -541,30 +457,8 @@ details[open] summary{border-bottom:1px solid var(--border);}
         <li><strong>Issues by person</strong> — doughnut showing which individuals have received the most.</li>
       </ul>
 
-      <h3>Exporting to Excel</h3>
-      <p>Click the <strong>Export Excel</strong> button (top-right of the Statistics page) to download a full transaction history as an <code>.xlsx</code> file. The export includes item name, type (Received / Issued / Returned), quantity, supplier or location, issued-to name and ID, and date.</p>
-    </section>
-
-    <!-- 9. Settings -->
-    <section id="settings">
-      <div class="sec-label">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Section 9
-      </div>
-      <h2><span class="num">9</span>Settings</h2>
-
-      <h3>Items</h3>
-      <p>Add, view, and remove the products your store tracks. Each item has a <strong>name</strong>, a <strong>unit</strong> (how quantity is measured), and an optional <strong>minimum threshold</strong> that triggers the amber low-stock alert.</p>
-      <div class="callout warn">
-        <div class="callout-ico"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-        <div class="callout-body"><strong>Deleting an item with stock</strong>If an item still shows stock, you must type its exact name in the confirmation dialog to confirm deletion. This prevents accidental removal of active inventory. Transaction history is always kept even after deletion.</div>
-      </div>
-
-      <h3>Suppliers</h3>
-      <p>The list of vendors that appear in the "Add Stock" supplier dropdown. Removing a supplier does not delete any past transactions — it only removes it from future dropdowns.</p>
-
-      <h3>Locations</h3>
-      <p>Departments, blocks, or areas that items are issued to or returned from. Same rules as suppliers — removal is non-destructive to history.</p>
+      <h3>Exporting</h3>
+      <p>Click <strong>Export Excel</strong> on the Statistics page for a summary export. For the full transaction history with all fields (including notes and user IDs), use the <strong>Export</strong> button on the <strong>History</strong> tab directly.</p>
     </section>
 
     <div class="divider"></div>
@@ -572,56 +466,97 @@ details[open] summary{border-bottom:1px solid var(--border);}
     <!-- 10. Master Tab -->
     <section id="master">
       <div class="sec-label">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
         Section 10
       </div>
-      <h2><span class="num">10</span>Master Tab — Access Control</h2>
-      <p>The <strong>Master</strong> tab is visible only to admins. It controls who can sign in to the app — no Firebase Console access is ever required after initial setup.</p>
+      <h2><span class="num">10</span>Master Tab</h2>
+      <p>The <strong>Master</strong> tab is where you manage the catalogue of items, suppliers, and locations. All users can access it.</p>
+
+      <h3>Items</h3>
+      <p>Each item has a <strong>name</strong>, a <strong>unit</strong> (how quantity is measured), and an optional <strong>Min. Threshold</strong> that triggers the amber low-stock alert on the Stock dashboard.</p>
+      <ul class="checks">
+        <li>Click the <strong>pencil icon</strong> on any item row to edit its name, unit, or threshold. Changes reflect immediately on the Stock dashboard and all dropdowns.</li>
+        <li>Click the <strong>× icon</strong> to delete an item. If the item still shows stock, you must type its exact name in the confirmation dialog. Transaction history is always preserved.</li>
+      </ul>
+      <div class="callout warn">
+        <div class="callout-ico"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="callout-body"><strong>Editing names does not change past transactions</strong>Transaction records store the item name at the time of the transaction. Renaming an item only affects future entries and the Stock dashboard — history is never altered.</div>
+      </div>
+
+      <h3>Bulk Import from Excel / CSV</h3>
+      <p>To load your initial stock data at once, use the <strong>Bulk import from Excel / CSV</strong> button at the bottom of the Items section.</p>
+      <ol class="steps">
+        <li data-n="1">Click <strong>Download template</strong> to get a ready-to-fill <code>.xlsx</code> file.</li>
+        <li data-n="2">Fill in your items: <strong>Item Name</strong>, <strong>Unit</strong>, <strong>Initial Stock</strong>, <strong>Min Threshold</strong>.</li>
+        <li data-n="3">Save the file and click <strong>Bulk import from Excel / CSV</strong>.</li>
+        <li data-n="4">A preview table shows every row — green <strong>New</strong> rows will be created, amber <strong>Skip</strong> rows already exist and will be ignored.</li>
+        <li data-n="5">Click <strong>Import</strong> to confirm. A toast confirms how many items were created.</li>
+      </ol>
+      <div class="callout info">
+        <div class="callout-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div class="callout-body"><strong>Column headers are flexible</strong>The importer accepts variations like "Item", "Name", "Qty", "Quantity", "Threshold", "Min Stock" — case-insensitive. Stick to the template for best results. Bulk import is only available to admins.</div>
+      </div>
+
+      <h3>Suppliers</h3>
+      <p>The list of vendors that appear in the <em>Add Stock</em> supplier dropdown. Use the pencil icon to rename a supplier; use × to remove it. Removing a supplier only affects future dropdowns — past transactions keep the original name.</p>
+
+      <h3>Locations</h3>
+      <p>Departments, blocks, or areas that items are issued to or returned from. Same edit and remove controls as suppliers.</p>
+    </section>
+
+    <!-- 11. Settings Tab -->
+    <section id="settings">
+      <div class="sec-label">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Section 11 <span class="admin-tag">Admin only</span>
+      </div>
+      <h2><span class="num">11</span>Settings Tab — Access Control</h2>
+      <p>The <strong>Settings</strong> tab is visible only to admins. It controls who can sign in to the app — no Firebase Console access is ever required.</p>
 
       <h3>Who is an admin?</h3>
-      <p>The person who first sets up access control becomes the initial admin automatically. From the Master tab, admins can promote other users to admin or demote them.</p>
+      <p>The person who first sets up access control becomes the initial admin automatically. Admins can promote other users or demote them from the Settings tab.</p>
 
-      <h3>First-time Setup</h3>
+      <h3>First-time activation</h3>
       <ol class="steps">
-        <li data-n="1">Sign in to the app. You will see the <strong>Master</strong> tab in the navigation bar.</li>
+        <li data-n="1">Sign in to the app. You will see the <strong>Settings</strong> tab in the navigation bar.</li>
         <li data-n="2">An amber notice informs you that access control is not yet active — any <code>@maruti.co.in</code> account can currently log in.</li>
         <li data-n="3">Enter the first staff member's email and click <strong>Add User</strong>. You are automatically added as admin at the same time.</li>
-        <li data-n="4">Access control is now active. Only users on the list can sign in.</li>
+        <li data-n="4">Access control is now active. Only users on the approved list can sign in.</li>
       </ol>
       <div class="callout tip">
         <div class="callout-ico"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="callout-body"><strong>Add yourself first, then others</strong>Once you add the first user, the restriction kicks in immediately. Make sure your own email is in the list (it is added automatically), and then add all other staff before anyone tries to log in.</div>
+        <div class="callout-body"><strong>Add all staff before activating</strong>Once you add the first user, access restriction activates immediately. Your own email is added automatically — add all other staff emails before anyone tries to log in.</div>
       </div>
 
-      <h3>Adding a User</h3>
+      <h3>Adding a user</h3>
       <ol class="steps">
-        <li data-n="1">Go to the <strong>Master</strong> tab.</li>
+        <li data-n="1">Go to the <strong>Settings</strong> tab.</li>
         <li data-n="2">Enter the staff member's <code>@maruti.co.in</code> email.</li>
-        <li data-n="3">Tick <strong>Make admin</strong> if this person should also be able to manage access.</li>
+        <li data-n="3">Tick <strong>Make admin</strong> if this person should also manage access.</li>
         <li data-n="4">Click <strong>Add User</strong>.</li>
       </ol>
 
-      <h3>Removing a User</h3>
-      <p>Click the <strong>Remove</strong> button next to any user. They will be signed out automatically the next time they try to use the app. You cannot remove your own account, and you cannot remove the last remaining admin.</p>
+      <h3>Removing a user</h3>
+      <p>Click <strong>Remove</strong> next to any user. They will be signed out automatically the next time they open the app. You cannot remove your own account or the last remaining admin.</p>
 
-      <h3>Changing Admin Status</h3>
-      <p>Click <strong>Make admin</strong> or <strong>Remove admin</strong> next to any user (except yourself). Admin users can see the Master tab and manage access; regular users cannot.</p>
+      <h3>Changing admin status</h3>
+      <p>Click <strong>Make admin</strong> or <strong>Remove admin</strong> next to any user (except yourself). Admin users can see the Settings tab and manage access; regular users cannot. Only admins can also void transactions and hard-delete records.</p>
 
       <div class="callout info">
         <div class="callout-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-        <div class="callout-body"><strong>Handover when leaving</strong>Before you leave the organisation, promote your successor to admin from the Master tab. They will then be able to manage the access list themselves — no Firebase Console or technical knowledge needed.</div>
+        <div class="callout-body"><strong>Handover when leaving</strong>Before leaving the organisation, promote your successor to admin from the Settings tab. They can then manage the access list themselves — no Firebase Console needed.</div>
       </div>
     </section>
 
     <div class="divider"></div>
 
-    <!-- 11. FAQ -->
+    <!-- 12. FAQ -->
     <section id="faq">
       <div class="sec-label">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        Section 11
+        Section 12
       </div>
-      <h2><span class="num">11</span>Frequently Asked Questions</h2>
+      <h2><span class="num">12</span>Frequently Asked Questions</h2>
 
       <details open>
         <summary>Can multiple people use the app at the same time?</summary>
@@ -629,38 +564,48 @@ details[open] summary{border-bottom:1px solid var(--border);}
       </details>
 
       <details>
-        <summary>What if I accidentally record the wrong quantity?</summary>
-        <div class="faq-body"><p>There is no edit function for past transactions (this is intentional — it preserves an accurate audit trail). To correct a mistake: if you over-issued, add the excess back as a Return. If you under-received, add a new Add Stock entry for the difference. Note both with a comment in the bill/notes field for reference.</p></div>
+        <summary>What if I accidentally issued the wrong quantity?</summary>
+        <div class="faq-body"><p>Contact an admin — only admins can void transactions. The admin will click <strong>Void</strong> on the incorrect row in the History tab, which reverses the stock change and creates a permanent REVERSAL record. Both the original and the reversal remain visible forever for audit purposes.</p></div>
+      </details>
+
+      <details>
+        <summary>Why is the Notes / Reason field required when issuing items?</summary>
+        <div class="faq-body"><p>Every issue must have a documented business reason (e.g. "Routine floor cleaning — Block A", "Equipment repair workshop"). This creates a clear audit trail of why stock left the store, making it easy to investigate discrepancies later. The reason is stored with the transaction and appears in the History tab and exports.</p></div>
       </details>
 
       <details>
         <summary>I added a supplier called "ABC" but now I can't add "A B C". Why?</summary>
-        <div class="faq-body"><p>The app normalises names by removing spaces and punctuation before checking for duplicates. "ABC", "A B C", "a.b.c" and "A-B-C" all look the same to the duplicate checker. This prevents accidentally having the same vendor under two slightly different names. If you genuinely need a separate entry, use a more distinguishing name (e.g. "ABC Chemicals" vs "ABC Traders").</p></div>
+        <div class="faq-body"><p>The app normalises names by removing spaces and punctuation before checking for duplicates. "ABC", "A B C", "a.b.c" and "A-B-C" all look the same to the duplicate checker. If you genuinely need a separate entry, use a distinguishing name (e.g. "ABC Chemicals" vs "ABC Traders").</p></div>
       </details>
 
       <details>
-        <summary>The stock card for an item shows amber even though I haven't set a threshold.</summary>
-        <div class="faq-body"><p>Items with no threshold use a built-in default of 10 units. If an item naturally runs below 10 and you don't want the alert, set its minimum threshold to 0 in Settings — that disables the alert entirely.</p></div>
+        <summary>The stock card shows amber even though I haven't set a threshold.</summary>
+        <div class="faq-body"><p>Items with no threshold use a built-in default of 10 units. If an item naturally runs below 10 and you don't want the alert, set its minimum threshold to 0 in the Master tab — that disables the alert entirely for that item.</p></div>
       </details>
 
       <details>
-        <summary>How do I download a copy of all transactions?</summary>
-        <div class="faq-body"><p>Go to <strong>Statistics</strong> and click <strong>Export Excel</strong>. This downloads an <code>.xlsx</code> file with every transaction — item, type, quantity, supplier/location, recipient, and date. You can open it in Microsoft Excel or Google Sheets.</p></div>
+        <summary>How do I download all transactions?</summary>
+        <div class="faq-body"><p>Go to the <strong>History</strong> tab and click the <strong>Export</strong> button (top-right). This downloads an <code>.xlsx</code> file with every transaction — item, type, quantity, supplier, location, recipient, notes, voided status, and the user who created the entry. You can also export the full <strong>Activity Log</strong> from the Logs tab using its own Export button.</p></div>
       </details>
 
       <details>
         <summary>Can I delete a location or supplier that was used in past transactions?</summary>
-        <div class="faq-body"><p>Yes. Removing a location or supplier only removes it from the dropdown for future entries. All past transactions that referenced it are kept intact and still show the original name in the History and Statistics views.</p></div>
+        <div class="faq-body"><p>Yes. Removing a location or supplier only removes it from future dropdowns. All past transactions that referenced it are kept intact and still show the original name in History and Statistics.</p></div>
       </details>
 
       <details>
-        <summary>I see "Only @maruti.co.in email addresses are allowed" when trying to sign in.</summary>
-        <div class="faq-body"><p>The app is restricted to Maruti Suzuki work email addresses. Make sure you are signing in with your official <strong>yourname@maruti.co.in</strong> email, not a personal Gmail or other address.</p></div>
+        <summary>A user left the company. What should I do?</summary>
+        <div class="faq-body"><p>Go to the <strong>Settings</strong> tab (admin only) and click <strong>Remove</strong> next to their email. They will be signed out automatically the next time they open the app. Their past transaction records are preserved — removing a user never deletes history.</p></div>
+      </details>
+
+      <details>
+        <summary>I see "Your account is not approved" when signing in.</summary>
+        <div class="faq-body"><p>Access control is active and your email has not been added to the approved list yet. Contact your admin and ask them to add your <code>@maruti.co.in</code> email from the Settings tab.</p></div>
       </details>
 
       <details>
         <summary>Who do I contact if something is wrong with the app?</summary>
-        <div class="faq-body"><p>Contact your IT administrator or the person who set up the app. They have access to the Firebase console and can investigate data issues or account problems.</p></div>
+        <div class="faq-body"><p>Contact your admin (the person who manages the Settings tab). For technical issues, they can contact the person who set up the Firebase project.</p></div>
       </details>
     </section>
 
@@ -668,7 +613,6 @@ details[open] summary{border-bottom:1px solid var(--border);}
 </div>
 
 <script>
-/* Highlight active TOC link on scroll */
 const links = document.querySelectorAll('.toc-link[href^="#"]');
 const observer = new IntersectionObserver(entries => {
   entries.forEach(e => {
@@ -680,12 +624,8 @@ const observer = new IntersectionObserver(entries => {
   });
 }, { rootMargin: '-10% 0px -80% 0px' });
 document.querySelectorAll('section[id]').forEach(s => observer.observe(s));
-
-/* Open all details for print */
 window.addEventListener('beforeprint', () => document.querySelectorAll('details').forEach(d => d.open = true));
-window.addEventListener('afterprint',  () => {
-  document.querySelectorAll('details').forEach((d, i) => d.open = i === 0);
-});
+window.addEventListener('afterprint',  () => { document.querySelectorAll('details').forEach((d, i) => d.open = i === 0); });
 </script>
 </body>
 </html>

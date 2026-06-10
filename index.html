@@ -487,6 +487,10 @@
     </div>
     <div class="idet-stats" id="idet-stats"></div>
     <div class="idet-section">
+      <div class="idet-section-title">Usage — Last 6 Months</div>
+      <div class="idet-graph" id="idet-graph"></div>
+    </div>
+    <div class="idet-section">
       <div class="idet-section-title">Top Locations Issued To</div>
       <div id="idet-locations"></div>
     </div>
@@ -1879,6 +1883,33 @@ function showItemDetail(item) {
     <div class="idet-stat"><div class="idet-stat-val">${txs.length}</div><div class="idet-stat-lbl">Transactions</div></div>
     ${item.minThreshold > 0 ? `<div class="idet-stat"><div class="idet-stat-val">${fmt(item.minThreshold)}</div><div class="idet-stat-lbl">Min Threshold</div></div>` : ''}
   `;
+
+  // Usage graph — issued qty per month, last 6 months
+  const now = new Date();
+  const months = [];
+  for (let m = 5; m >= 0; m--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
+    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleString('en-IN', { month: 'short' }), qty: 0 });
+  }
+  txs.filter(t => t.type === 'out').forEach(t => {
+    const ts = t.createdAt?.toDate ? t.createdAt.toDate() : null;
+    if (!ts) return;
+    const key = `${ts.getFullYear()}-${ts.getMonth()}`;
+    const mo = months.find(x => x.key === key);
+    if (mo) mo.qty += t.quantity || 0;
+  });
+  const graphEl = document.getElementById('idet-graph');
+  const maxQty = Math.max(...months.map(m => m.qty));
+  if (maxQty === 0) {
+    graphEl.innerHTML = '<div class="idet-empty">No usage in the last 6 months</div>';
+  } else {
+    graphEl.innerHTML = `<div class="idet-graph-bars">` + months.map(m => `
+      <div class="idet-graph-col">
+        <div class="idet-graph-val">${m.qty ? fmt(m.qty) : ''}</div>
+        <div class="idet-graph-bar-wrap"><div class="idet-graph-bar" style="height:${m.qty ? Math.max(Math.round((m.qty / maxQty) * 100), 4) : 0}%"></div></div>
+        <div class="idet-graph-lbl">${m.label}</div>
+      </div>`).join('') + `</div>`;
+  }
 
   // Top locations
   const locMap = {};

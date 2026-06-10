@@ -154,8 +154,8 @@
               <input class="mi" id="issue-to-id" type="text" placeholder="Employee / staff ID" maxlength="40">
             </div>
             <div class="mf">
-              <label class="ml">Notes <span class="opt">(optional)</span></label>
-              <input class="mi" id="issue-notes" type="text" placeholder="Reason, purpose, reference…" maxlength="200">
+              <label class="ml">Notes / Reason</label>
+              <input class="mi" id="issue-notes" type="text" placeholder="Reason or purpose for this issue…" maxlength="200">
             </div>
           </div>
           <button class="btn btn-primary btn-wide" id="issue-submit">
@@ -719,6 +719,7 @@ function setupSettings() {
 let _bulkParsed = [];
 
 function setupBulkUpload() {
+  if (!isAdmin) { document.querySelector('.bulk-upload-row').style.display = 'none'; return; }
   const fileInput = document.getElementById('bulk-file');
   document.getElementById('bulk-upload-btn').addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', handleBulkFile);
@@ -1530,6 +1531,7 @@ async function submitIssue() {
   if (!qtyRaw)     { showMsg('issue-err','Please enter a quantity.','alert'); return; }
   if (!locationId) { showMsg('issue-err','Please select a location.','alert'); return; }
   if (!toName)     { showMsg('issue-err','Please enter who the item is issued to.','alert'); return; }
+  if (!notes)      { showMsg('issue-err','Please enter a reason or purpose for this issue.','alert'); return; }
 
   const qty = parseFloat(qtyRaw);
   if (isNaN(qty) || qty <= 0) { showMsg('issue-err','Quantity must be greater than 0.','alert'); return; }

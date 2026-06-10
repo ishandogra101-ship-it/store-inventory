@@ -224,6 +224,11 @@ select.ms{
   border:1px solid var(--border);background:var(--surface);color:var(--ink3);cursor:pointer;transition:all var(--ease);}
 .filter-pill:hover{background:var(--surface3);color:var(--ink);}
 .filter-pill.active{background:var(--primaryS);color:var(--primary);border-color:var(--primaryB);}
+.export-btn{display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:12px;font-weight:700;
+  padding:6px 12px;border-radius:var(--r8);border:1px solid var(--border);background:var(--surface);
+  color:var(--ink3);cursor:pointer;transition:all var(--ease);white-space:nowrap;flex-shrink:0;}
+.export-btn:hover{background:var(--primaryS);color:var(--primary);border-color:var(--primaryB);}
+.export-btn .ic{width:13px;height:13px;}
 
 /* ── TRANSACTION LIST ── */
 .tx-list{display:flex;flex-direction:column;gap:8px;}

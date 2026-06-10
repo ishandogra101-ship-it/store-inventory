@@ -168,7 +168,10 @@
       <div class="tab-panel" id="tab-history">
         <div class="section-header">
           <div class="section-title">Transaction History</div>
-          <span class="section-meta" id="tx-count"></span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="section-meta" id="tx-count"></span>
+            <button class="export-btn" id="export-history-btn"><span data-ic="download"></span>Export</button>
+          </div>
         </div>
         <div class="filter-pills">
           <button class="filter-pill active" data-filter="all">All</button>
@@ -223,7 +226,10 @@
       <div class="tab-panel" id="tab-logs">
         <div class="section-header">
           <div class="section-title">Activity Log</div>
-          <span class="section-meta" id="audit-meta"></span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="section-meta" id="audit-meta"></span>
+            <button class="export-btn" id="export-logs-btn"><span data-ic="download"></span>Export</button>
+          </div>
         </div>
         <div class="audit-list" id="audit-list"></div>
         <div class="empty-state hidden" id="audit-empty">
@@ -460,6 +466,7 @@ let items         = [];
 let suppliers     = [];
 let locations     = [];
 let allTx         = [];
+let allAudit      = [];
 let currentFilter = 'all';
 let searchTerm    = '';
 let isAdmin       = false;
@@ -520,6 +527,8 @@ async function initApp() {
   listenAudit();
   setupSettings();
   setupBulkUpload();
+  document.getElementById('export-history-btn').addEventListener('click', exportHistory);
+  document.getElementById('export-logs-btn').addEventListener('click', exportLogs);
 }
 
 /* ── Config (suppliers + locations) ── */
@@ -1120,7 +1129,8 @@ async function logAudit(action, detail) {
 function listenAudit() {
   const q = query(collection(db, 'invAudit'), orderBy('at', 'desc'), limit(300));
   onSnapshot(q, snap => {
-    renderAudit(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    allAudit = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderAudit(allAudit);
   });
 }
 
@@ -1164,6 +1174,66 @@ function renderAudit(logs) {
       </div>`;
     list.appendChild(row);
   });
+}
+
+/* ── Exports ── */
+function exportHistory() {
+  if (!allTx.length) { toast('No transactions to export.', 'err'); return; }
+  const voidedIds = new Set(allTx.filter(t => t.type === 'void').map(t => t.voidOfId));
+  const rows = allTx.map(tx => {
+    const ts   = tx.createdAt?.toDate ? tx.createdAt.toDate() : new Date();
+    const kind = txKind(tx);
+    let type;
+    if (kind === 'void')     type = 'Reversal';
+    else if (kind === 'out') type = 'Issue';
+    else if (kind === 'returned') type = 'Return';
+    else                     type = 'Stock In';
+    return {
+      'Date':        ts.toLocaleString('en-IN'),
+      'Type':        type,
+      'Item':        tx.itemName || '',
+      'Quantity':    tx.quantity,
+      'Unit':        tx.unit || '',
+      'Supplier':    tx.supplierName || '',
+      'Bill No':     tx.billNo || '',
+      'Location':    tx.locationName || tx.returnLocationName || '',
+      'Issued To':   tx.issuedToName || '',
+      'Employee ID': tx.issuedToId || '',
+      'Notes':       tx.notes || '',
+      'Voided':      voidedIds.has(tx.id) ? 'Yes' : '',
+      'Void Of':     tx.voidOfId || '',
+      'By (Email)':  tx.createdByEmail || '',
+      'By (UID)':    tx.createdBy || '',
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [18,14,20,10,8,18,14,16,16,12,24,8,22,24,28].map(w => ({ wch: w }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'History');
+  XLSX.writeFile(wb, `inventory-history-${dateStamp()}.xlsx`);
+  toast('History exported.', 'ok');
+}
+
+function exportLogs() {
+  if (!allAudit.length) { toast('No activity to export.', 'err'); return; }
+  const rows = allAudit.map(log => ({
+    'Date':       log.at?.toDate ? log.at.toDate().toLocaleString('en-IN') : '',
+    'Action':     AUDIT_LABELS[log.action] || log.action,
+    'Detail':     log.detail || '',
+    'By (Email)': log.byEmail || '',
+    'By (UID)':   log.by || '',
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [20, 16, 50, 28, 28].map(w => ({ wch: w }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Activity Log');
+  XLSX.writeFile(wb, `inventory-logs-${dateStamp()}.xlsx`);
+  toast('Activity log exported.', 'ok');
+}
+
+function dateStamp() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 /* ── History (real-time) ── */

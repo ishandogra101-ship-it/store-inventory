@@ -65,6 +65,7 @@
           <div class="stock-panel">
             <div class="stock-panel-hdr critical-hdr">
               <span class="stock-panel-title"><span data-ic="alert"></span>Critical · Needs Attention</span>
+              <input class="panel-search" id="search-critical" type="text" placeholder="Search…" autocomplete="off">
               <span class="stock-panel-count" id="panel-critical-count"></span>
             </div>
             <div class="stock-grid" id="grid-critical"></div>
@@ -73,6 +74,7 @@
           <div class="stock-panel">
             <div class="stock-panel-hdr attn-hdr">
               <span class="stock-panel-title"><span data-ic="alert"></span>Needs Attention</span>
+              <input class="panel-search" id="search-attn" type="text" placeholder="Search…" autocomplete="off">
               <span class="stock-panel-count" id="panel-attn-count"></span>
             </div>
             <div class="stock-grid" id="grid-attn"></div>
@@ -81,6 +83,7 @@
           <div class="stock-panel">
             <div class="stock-panel-hdr ok-hdr">
               <span class="stock-panel-title"><span data-ic="box"></span>All Stock</span>
+              <input class="panel-search" id="search-ok" type="text" placeholder="Search…" autocomplete="off">
               <span class="stock-panel-count" id="panel-ok-count"></span>
             </div>
             <div class="stock-grid" id="grid-ok"></div>
@@ -713,9 +716,12 @@ function renderStock() {
   searchEmpty.classList.add('hidden');
   panels.classList.remove('hidden');
 
-  const critItems = visible.filter(i => i.category === 'critical' && stockStatus(i) !== 'ok');
-  const attnItems = visible.filter(i => i.category !== 'critical' && stockStatus(i) !== 'ok');
-  const okItems   = visible.filter(i => stockStatus(i) === 'ok');
+  const pf = k => panelSearch[k].trim().toLowerCase();
+  const byTerm = (list, k) => pf(k) ? list.filter(i => i.name.toLowerCase().includes(pf(k))) : list;
+
+  const critItems = byTerm(visible.filter(i => i.category === 'critical' && stockStatus(i) !== 'ok'), 'crit');
+  const attnItems = byTerm(visible.filter(i => i.category !== 'critical' && stockStatus(i) !== 'ok'), 'attn');
+  const okItems   = byTerm(visible.filter(i => stockStatus(i) === 'ok'), 'ok');
 
   critItems.sort((a,b) => (stockStatus(a)==='zero'?0:1) - (stockStatus(b)==='zero'?0:1));
   attnItems.sort((a,b) => (stockStatus(a)==='zero'?0:1) - (stockStatus(b)==='zero'?0:1));
@@ -733,11 +739,20 @@ function renderStock() {
   document.getElementById('empty-ok').classList.toggle('hidden',       okItems.length   > 0);
 }
 
+const panelSearch = { crit: '', attn: '', ok: '' };
+
 function setupSearch() {
   document.getElementById('stock-search').addEventListener('input', e => {
     searchTerm = e.target.value;
     renderStock();
   });
+  const wire = (id, key) => document.getElementById(id).addEventListener('input', e => {
+    panelSearch[key] = e.target.value;
+    renderStock();
+  });
+  wire('search-critical', 'crit');
+  wire('search-attn', 'attn');
+  wire('search-ok', 'ok');
   document.getElementById('empty-settings-btn').addEventListener('click', () => switchTab('master'));
 }
 

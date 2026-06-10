@@ -288,7 +288,10 @@ select.ms{
   white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;gap:6px;}
 .settings-add-btn:hover{background:var(--primaryD);transform:translateY(-1px);box-shadow:0 5px 14px rgba(79,70,229,.28);}
 .settings-add-btn .ic{width:15px;height:15px;stroke-width:2.4;}
-.settings-list{display:flex;flex-direction:column;gap:6px;}
+.settings-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border) transparent;padding-right:2px;}
+.settings-list::-webkit-scrollbar{width:5px;}
+.settings-list::-webkit-scrollbar-track{background:transparent;}
+.settings-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
 .settings-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);
   border-radius:var(--r8);border:1px solid var(--border);}
 .settings-item-name{flex:1;font-size:13px;font-weight:600;color:var(--ink);}

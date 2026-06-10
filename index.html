@@ -810,12 +810,14 @@ async function executeBulkImport() {
   document.getElementById('bulk-confirm').disabled = true;
   document.getElementById('bulk-confirm').textContent = 'Importing…';
   let success = 0, failed = 0;
+  const imported = [];
   for (const row of newRows) {
     try {
       await addDoc(collection(db, 'invItems'), {
         name: row.name, unit: row.unit, minThreshold: row.threshold,
         currentStock: row.stock, createdAt: serverTimestamp()
       });
+      imported.push(row);
       success++;
     } catch { failed++; }
   }
@@ -824,8 +826,11 @@ async function executeBulkImport() {
   document.getElementById('bulk-confirm').disabled = false;
   toast(`Imported ${success} item${success !== 1 ? 's' : ''}${failed ? `, ${failed} failed` : ''}.`, success > 0 ? 'ok' : 'err');
   if (success > 0) {
-    const names = newRows.slice(0, 5).map(r => r.name).join(', ') + (newRows.length > 5 ? ` +${newRows.length - 5} more` : '');
+    const names = imported.slice(0, 5).map(r => r.name).join(', ') + (imported.length > 5 ? ` +${imported.length - 5} more` : '');
     logAudit('bulk.upload', `Bulk imported ${success} item${success !== 1 ? 's' : ''}: ${names}`);
+    for (const row of imported) {
+      logAudit('item.create', `Added item "${row.name}" (${row.unit || '—'}${row.threshold > 0 ? ', min ' + row.threshold : ''}${row.stock > 0 ? ', stock ' + row.stock : ''}) [bulk import]`);
+    }
   }
 }
 

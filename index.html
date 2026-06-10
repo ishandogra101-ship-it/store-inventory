@@ -61,14 +61,32 @@
           <span class="section-meta" id="stock-meta"></span>
         </div>
 
-        <!-- Needs attention -->
-        <div class="attention-band hidden" id="attention-band">
-          <div class="subhead"><span data-ic="alert"></span>Needs Attention</div>
-          <div class="stock-grid attention" id="attention-grid"></div>
+        <div class="stock-panels" id="stock-panels">
+          <div class="stock-panel">
+            <div class="stock-panel-hdr critical-hdr">
+              <span class="stock-panel-title"><span data-ic="alert"></span>Critical · Needs Attention</span>
+              <span class="stock-panel-count" id="panel-critical-count"></span>
+            </div>
+            <div class="stock-grid" id="grid-critical"></div>
+            <div class="stock-panel-empty hidden" id="empty-critical">All critical items are stocked</div>
+          </div>
+          <div class="stock-panel">
+            <div class="stock-panel-hdr attn-hdr">
+              <span class="stock-panel-title"><span data-ic="alert"></span>Needs Attention</span>
+              <span class="stock-panel-count" id="panel-attn-count"></span>
+            </div>
+            <div class="stock-grid" id="grid-attn"></div>
+            <div class="stock-panel-empty hidden" id="empty-attn">No items need attention</div>
+          </div>
+          <div class="stock-panel">
+            <div class="stock-panel-hdr ok-hdr">
+              <span class="stock-panel-title"><span data-ic="box"></span>All Stock</span>
+              <span class="stock-panel-count" id="panel-ok-count"></span>
+            </div>
+            <div class="stock-grid" id="grid-ok"></div>
+            <div class="stock-panel-empty hidden" id="empty-ok">No items with sufficient stock</div>
+          </div>
         </div>
-
-        <div class="subhead" id="all-head"><span data-ic="layers"></span>All Items</div>
-        <div class="stock-grid" id="stock-grid"></div>
 
         <div class="empty-state hidden" id="stock-empty">
           <div class="empty-state-ico"><span data-ic="box"></span></div>
@@ -273,6 +291,13 @@
                 <div class="fld-label">Min. threshold</div>
                 <input class="mi" id="st-item-thr" type="number" min="0" step="any" placeholder="0">
               </div>
+              <div class="w-cat">
+                <div class="fld-label">Category</div>
+                <select class="ms" id="st-item-cat">
+                  <option value="">Normal</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
               <button class="settings-add-btn" id="st-add-item-btn"><span data-ic="plus"></span>Add</button>
             </div>
             <div class="settings-list" id="st-items-list">
@@ -434,12 +459,40 @@
           <label class="ml">Low-stock threshold (0 = off)</label>
           <input class="mi" id="ste-thr" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
         </div>
+        <div class="mf" style="margin-top:10px">
+          <label class="ml">Category</label>
+          <select class="ms" id="ste-category">
+            <option value="">Normal</option>
+            <option value="critical">Critical</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="modal-err hidden" id="ste-err"></div>
     <div class="modal-actions">
       <button class="modal-btn" id="ste-cancel">Cancel</button>
       <button class="modal-btn primary" id="ste-ok">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="item-detail-modal" style="display:none">
+  <div class="modal idet-modal" role="dialog">
+    <div class="idet-header">
+      <div>
+        <div class="idet-name" id="idet-name"></div>
+        <div class="idet-chips" id="idet-chips"></div>
+      </div>
+      <button class="idet-close" id="idet-close" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="idet-stats" id="idet-stats"></div>
+    <div class="idet-section">
+      <div class="idet-section-title">Top Locations Issued To</div>
+      <div id="idet-locations"></div>
+    </div>
+    <div class="idet-section">
+      <div class="idet-section-title">Transaction History</div>
+      <div class="idet-tx-list" id="idet-txlist"></div>
     </div>
   </div>
 </div>
@@ -529,6 +582,10 @@ async function initApp() {
   setupBulkUpload();
   document.getElementById('export-history-btn').addEventListener('click', exportHistory);
   document.getElementById('export-logs-btn').addEventListener('click', exportLogs);
+  document.getElementById('idet-close').addEventListener('click', closeItemDetail);
+  document.getElementById('item-detail-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('item-detail-modal')) closeItemDetail();
+  });
 }
 
 /* ── Config (suppliers + locations) ── */
@@ -601,33 +658,37 @@ function stockCard(item) {
     : status === 'low'
       ? `<span class="stock-badge">${window.icon('alert')}Low</span>`
       : '';
-  const thrTxt = thr > 0 ? `min ${fmt(thr)}` : '';
+  const thrTxt   = thr > 0 ? `min ${fmt(thr)}` : '';
+  const critBadge = item.category === 'critical'
+    ? `<span class="stock-critical-chip">Critical</span>` : '';
   const card = document.createElement('div');
   card.className = `stock-card ${cls}`;
+  card.style.cursor = 'pointer';
   card.innerHTML = `
     <div class="stock-card-name">${esc(item.name)}</div>
     <div class="stock-card-qty">${fmt(stock)}</div>
     <div class="stock-card-unit">${esc(item.unit)}</div>
     <div class="stock-card-bar"><div class="stock-card-bar-fill" style="width:${fill}%"></div></div>
-    <div class="stock-card-foot"><span class="stock-thr">${thrTxt}</span>${badge}</div>
+    <div class="stock-card-foot"><span class="stock-thr">${thrTxt}</span>${critBadge}${badge}</div>
   `;
+  card.addEventListener('click', () => showItemDetail(item));
   return card;
 }
 
 function renderStock() {
-  const grid       = document.getElementById('stock-grid');
-  const attnBand   = document.getElementById('attention-band');
-  const attnGrid   = document.getElementById('attention-grid');
-  const allHead    = document.getElementById('all-head');
+  const panels     = document.getElementById('stock-panels');
+  const gridCrit   = document.getElementById('grid-critical');
+  const gridAttn   = document.getElementById('grid-attn');
+  const gridOk     = document.getElementById('grid-ok');
   const empty      = document.getElementById('stock-empty');
   const searchEmpty= document.getElementById('search-empty');
   const meta       = document.getElementById('stock-meta');
 
-  grid.innerHTML = ''; attnGrid.innerHTML = '';
+  gridCrit.innerHTML = ''; gridAttn.innerHTML = ''; gridOk.innerHTML = '';
 
   if (!items.length) {
     empty.classList.remove('hidden'); searchEmpty.classList.add('hidden');
-    attnBand.classList.add('hidden'); allHead.classList.add('hidden');
+    panels.classList.add('hidden');
     meta.textContent = '';
     return;
   }
@@ -641,23 +702,31 @@ function renderStock() {
   const term = searchTerm.trim().toLowerCase();
   const visible = term ? items.filter(i => i.name.toLowerCase().includes(term)) : items;
 
-  // Attention band — only when not searching
-  const attn = !term ? visible.filter(i => stockStatus(i) !== 'ok') : [];
-  if (attn.length) {
-    attnBand.classList.remove('hidden');
-    attn.sort((a,b) => (stockStatus(a)==='zero'?0:1) - (stockStatus(b)==='zero'?0:1));
-    attn.forEach(i => attnGrid.appendChild(stockCard(i)));
-  } else {
-    attnBand.classList.add('hidden');
-  }
-
   if (!visible.length) {
-    searchEmpty.classList.remove('hidden'); allHead.classList.add('hidden');
+    searchEmpty.classList.remove('hidden'); panels.classList.add('hidden');
     return;
   }
   searchEmpty.classList.add('hidden');
-  allHead.classList.remove('hidden');
-  visible.forEach(i => grid.appendChild(stockCard(i)));
+  panels.classList.remove('hidden');
+
+  const critItems = visible.filter(i => i.category === 'critical' && stockStatus(i) !== 'ok');
+  const attnItems = visible.filter(i => i.category !== 'critical' && stockStatus(i) !== 'ok');
+  const okItems   = visible.filter(i => stockStatus(i) === 'ok');
+
+  critItems.sort((a,b) => (stockStatus(a)==='zero'?0:1) - (stockStatus(b)==='zero'?0:1));
+  attnItems.sort((a,b) => (stockStatus(a)==='zero'?0:1) - (stockStatus(b)==='zero'?0:1));
+
+  critItems.forEach(i => gridCrit.appendChild(stockCard(i)));
+  attnItems.forEach(i => gridAttn.appendChild(stockCard(i)));
+  okItems.forEach(i   => gridOk.appendChild(stockCard(i)));
+
+  document.getElementById('panel-critical-count').textContent = critItems.length || '';
+  document.getElementById('panel-attn-count').textContent     = attnItems.length || '';
+  document.getElementById('panel-ok-count').textContent       = okItems.length   || '';
+
+  document.getElementById('empty-critical').classList.toggle('hidden', critItems.length > 0);
+  document.getElementById('empty-attn').classList.toggle('hidden',     attnItems.length > 0);
+  document.getElementById('empty-ok').classList.toggle('hidden',       okItems.length   > 0);
 }
 
 function setupSearch() {
@@ -865,6 +934,7 @@ function stRenderItems() {
       <span class="settings-item-name">${esc(item.name)}</span>
       <span class="settings-item-badge">${esc(item.unit)}</span>
       ${thr > 0 ? `<span class="settings-item-badge thr">min ${fmt(thr)}</span>` : ''}
+      ${item.category === 'critical' ? `<span class="settings-item-badge critical-badge">Critical</span>` : ''}
       <span class="settings-item-badge stock">${fmt(item.currentStock || 0)} in stock</span>
       <button class="settings-edit-btn" title="Edit">${window.icon('edit')}</button>
       <button class="settings-del-btn" title="Delete">${window.icon('x')}</button>`;
@@ -878,6 +948,7 @@ function stSetupItemAdd() {
   const nameInp = document.getElementById('st-item-name');
   const unitSel = document.getElementById('st-item-unit');
   const thrInp  = document.getElementById('st-item-thr');
+  const catSel  = document.getElementById('st-item-cat');
   const btn     = document.getElementById('st-add-item-btn');
   async function doAdd() {
     const name = nameInp.value.trim();
@@ -886,14 +957,16 @@ function stSetupItemAdd() {
     if (dupe) { toast(`Already exists as "${dupe.name}".`, 'err'); return; }
     let thr = parseFloat(thrInp.value);
     if (isNaN(thr) || thr < 0) thr = 0;
+    const category = catSel.value;
     btn.disabled = true;
     try {
       await addDoc(collection(db, 'invItems'), {
-        name, unit: unitSel.value, minThreshold: thr, currentStock: 0, createdAt: serverTimestamp()
+        name, unit: unitSel.value, minThreshold: thr, currentStock: 0,
+        category: category, createdAt: serverTimestamp()
       });
-      nameInp.value = ''; thrInp.value = '';
+      nameInp.value = ''; thrInp.value = ''; catSel.value = '';
       toast(`"${name}" added.`, 'ok');
-      logAudit('item.create', `Added item "${name}" (${unitSel.value}${thr > 0 ? ', min '+thr : ''})`);
+      logAudit('item.create', `Added item "${name}" (${unitSel.value}${thr > 0 ? ', min '+thr : ''}${category ? ', '+category : ''})`);
     } catch { toast('Failed to add item.', 'err'); }
     btn.disabled = false;
   }
@@ -965,17 +1038,18 @@ async function stDeleteConfigItem(key, item) {
 /* ── Settings edit modal ── */
 const _ste = {
   overlay: null, nameInp: null, unitSel: null, thrInp: null,
-  extras: null, errEl: null, okBtn: null, resolve: null,
+  extras: null, errEl: null, okBtn: null, resolve: null, categorySel: null,
 };
 function steInit() {
   if (_ste.overlay) return;
-  _ste.overlay = document.getElementById('settings-edit-modal');
-  _ste.nameInp = document.getElementById('ste-name');
-  _ste.unitSel = document.getElementById('ste-unit');
-  _ste.thrInp  = document.getElementById('ste-thr');
-  _ste.extras  = document.getElementById('ste-item-extras');
-  _ste.errEl   = document.getElementById('ste-err');
-  _ste.okBtn   = document.getElementById('ste-ok');
+  _ste.overlay     = document.getElementById('settings-edit-modal');
+  _ste.nameInp     = document.getElementById('ste-name');
+  _ste.unitSel     = document.getElementById('ste-unit');
+  _ste.thrInp      = document.getElementById('ste-thr');
+  _ste.extras      = document.getElementById('ste-item-extras');
+  _ste.errEl       = document.getElementById('ste-err');
+  _ste.okBtn       = document.getElementById('ste-ok');
+  _ste.categorySel = document.getElementById('ste-category');
   const cancel = () => { if (_ste.resolve) _ste.resolve(null); };
   document.getElementById('ste-cancel').addEventListener('click', cancel);
   _ste.overlay.addEventListener('click', e => { if (e.target === _ste.overlay) cancel(); });
@@ -986,8 +1060,9 @@ function steOpen(title, showExtras, defaults, validate) {
   _ste.nameInp.value = defaults.name || '';
   _ste.extras.style.display = showExtras ? '' : 'none';
   if (showExtras) {
-    _ste.unitSel.value = defaults.unit || 'pcs';
-    _ste.thrInp.value  = (defaults.thr > 0) ? defaults.thr : '';
+    _ste.unitSel.value     = defaults.unit || 'pcs';
+    _ste.thrInp.value      = (defaults.thr > 0) ? defaults.thr : '';
+    _ste.categorySel.value = defaults.category || '';
   }
   _ste.errEl.textContent = '';
   _ste.errEl.classList.add('hidden');
@@ -1006,12 +1081,13 @@ function steOpen(title, showExtras, defaults, validate) {
       const name = _ste.nameInp.value.trim();
       const unit = _ste.unitSel.value;
       let thr = parseFloat(_ste.thrInp.value); if (isNaN(thr) || thr < 0) thr = 0;
+      const category = showExtras ? _ste.categorySel.value : undefined;
       if (!name) { _ste.errEl.textContent = 'Name cannot be empty.'; _ste.errEl.classList.remove('hidden'); return; }
       if (validate) {
         const err = validate(name, unit, thr);
         if (err) { _ste.errEl.textContent = err; _ste.errEl.classList.remove('hidden'); return; }
       }
-      _ste.resolve({ name, unit, thr });
+      _ste.resolve({ name, unit, thr, category });
     };
     _ste.nameInp.onkeydown = e => { if (e.key === 'Enter') _ste.okBtn.click(); };
   });
@@ -1019,7 +1095,7 @@ function steOpen(title, showExtras, defaults, validate) {
 
 async function stEditItem(item) {
   const data = await steOpen('Edit Item', true,
-    { name: item.name, unit: item.unit, thr: item.minThreshold },
+    { name: item.name, unit: item.unit, thr: item.minThreshold, category: item.category || '' },
     (name) => {
       const dupe = items.find(i => i.id !== item.id && normName(i.name) === normName(name));
       return dupe ? `"${dupe.name}" already exists.` : null;
@@ -1027,9 +1103,11 @@ async function stEditItem(item) {
   );
   if (!data) return;
   try {
-    await updateDoc(doc(db, 'invItems', item.id), { name: data.name, unit: data.unit, minThreshold: data.thr });
+    await updateDoc(doc(db, 'invItems', item.id), {
+      name: data.name, unit: data.unit, minThreshold: data.thr, category: data.category
+    });
     toast(`"${data.name}" updated.`, 'ok');
-    logAudit('item.edit', `Edited item "${item.name}" → name: "${data.name}", unit: ${data.unit}, threshold: ${data.thr}`);
+    logAudit('item.edit', `Edited item "${item.name}" → name: "${data.name}", unit: ${data.unit}, threshold: ${data.thr}${data.category ? ', category: '+data.category : ''}`);
   } catch { toast('Failed to save changes.', 'err'); }
 }
 
@@ -1770,6 +1848,87 @@ function showVoidConfirm(tx) {
     document.getElementById('void-confirm-cancel').onclick = () => done(false);
     overlay.onclick = e => { if (e.target === overlay) done(false); };
   });
+}
+
+/* ── Item Detail Modal ── */
+function showItemDetail(item) {
+  const modal = document.getElementById('item-detail-modal');
+  const txs   = allTx.filter(t => t.itemId === item.id).sort((a,b) => {
+    const ta = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+    const tb = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+    return tb - ta;
+  });
+
+  // Header
+  document.getElementById('idet-name').textContent = item.name;
+  const status = stockStatus(item);
+  const chips = [];
+  if (item.category === 'critical') chips.push(`<span class="idet-chip idet-chip-critical">Critical</span>`);
+  chips.push(`<span class="idet-chip idet-chip-${status}">${status === 'zero' ? 'Out of Stock' : status === 'low' ? 'Low Stock' : 'In Stock'}</span>`);
+  chips.push(`<span class="idet-chip">${esc(item.unit)}</span>`);
+  document.getElementById('idet-chips').innerHTML = chips.join('');
+
+  // Stats
+  const totalIn  = txs.filter(t=>t.type==='in'||t.type==='returned').reduce((s,t)=>s+(t.quantity||0),0);
+  const totalOut = txs.filter(t=>t.type==='out').reduce((s,t)=>s+(t.quantity||0),0);
+  const voids    = txs.filter(t=>t.type==='void').length;
+  document.getElementById('idet-stats').innerHTML = `
+    <div class="idet-stat"><div class="idet-stat-val">${fmt(item.currentStock||0)}</div><div class="idet-stat-lbl">Current Stock</div></div>
+    <div class="idet-stat"><div class="idet-stat-val">${fmt(totalIn)}</div><div class="idet-stat-lbl">Total In</div></div>
+    <div class="idet-stat"><div class="idet-stat-val">${fmt(totalOut)}</div><div class="idet-stat-lbl">Total Issued</div></div>
+    <div class="idet-stat"><div class="idet-stat-val">${txs.length}</div><div class="idet-stat-lbl">Transactions</div></div>
+    ${item.minThreshold > 0 ? `<div class="idet-stat"><div class="idet-stat-val">${fmt(item.minThreshold)}</div><div class="idet-stat-lbl">Min Threshold</div></div>` : ''}
+  `;
+
+  // Top locations
+  const locMap = {};
+  txs.filter(t=>t.type==='out').forEach(t => {
+    const loc = t.locationName || '—';
+    locMap[loc] = (locMap[loc]||0) + 1;
+  });
+  const topLocs = Object.entries(locMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const locEl = document.getElementById('idet-locations');
+  if (!topLocs.length) {
+    locEl.innerHTML = '<div class="idet-empty">No issues recorded yet</div>';
+  } else {
+    const maxCount = topLocs[0][1];
+    locEl.innerHTML = topLocs.map(([loc, count]) => `
+      <div class="idet-loc-row">
+        <span class="idet-loc-name">${esc(loc)}</span>
+        <div class="idet-loc-bar-wrap"><div class="idet-loc-bar" style="width:${Math.round((count/maxCount)*100)}%"></div></div>
+        <span class="idet-loc-count">${count}</span>
+      </div>`).join('');
+  }
+
+  // Transaction list
+  const txEl = document.getElementById('idet-txlist');
+  if (!txs.length) {
+    txEl.innerHTML = '<div class="idet-empty">No transactions yet</div>';
+  } else {
+    txEl.innerHTML = txs.slice(0,50).map(tx => {
+      const ts   = tx.createdAt?.toDate ? tx.createdAt.toDate() : new Date();
+      const kind = txKind(tx);
+      const typeLabel = kind === 'void' ? 'Void' : kind === 'out' ? 'Issue' : kind === 'returned' ? 'Return' : 'Stock In';
+      const typeClass = kind === 'void' ? 'tx-void' : kind === 'out' ? 'tx-out' : kind === 'returned' ? 'tx-ret' : 'tx-in';
+      const qty = kind === 'out' || kind === 'void' ? `-${fmt(tx.quantity)}` : `+${fmt(tx.quantity)}`;
+      const meta = kind === 'out' ? esc(tx.locationName||'—') : kind==='in' ? esc(tx.supplierName||'—') : '';
+      return `<div class="idet-tx-row">
+        <span class="idet-tx-type ${typeClass}">${typeLabel}</span>
+        <span class="idet-tx-qty ${kind==='out'||kind==='void'?'neg':'pos'}">${qty} ${esc(item.unit)}</span>
+        <span class="idet-tx-meta">${meta}</span>
+        <span class="idet-tx-date">${relTime(ts)}</span>
+      </div>`;
+    }).join('');
+  }
+
+  modal.style.display = '';
+  requestAnimationFrame(() => modal.classList.add('show'));
+}
+
+function closeItemDetail() {
+  const modal = document.getElementById('item-detail-modal');
+  modal.classList.remove('show');
+  setTimeout(() => { modal.style.display = 'none'; }, 200);
 }
 
 /* ── Helpers ── */

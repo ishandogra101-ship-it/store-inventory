@@ -821,29 +821,47 @@ function setupSearch() {
   document.getElementById('empty-settings-btn').addEventListener('click', () => switchTab('master'));
 
   function closeMaxPanel() {
-    document.querySelectorAll('.stock-panel').forEach(p => p.classList.remove('is-max'));
-    document.getElementById('stock-panels').classList.remove('has-max');
-    document.getElementById('stock-panel-backdrop').classList.remove('active');
+    const maxPanel = document.querySelector('.stock-panel.is-max');
+    const backdrop = document.getElementById('stock-panel-backdrop');
+    // reset buttons immediately so the icon changes feel snappy
     document.querySelectorAll('.panel-max-btn').forEach(b => {
       b.title = 'Maximise';
       b.querySelector('[data-ic]').dataset.ic = 'expand';
       hydrateIcons(b);
     });
+    if (!maxPanel) {
+      document.getElementById('stock-panels').classList.remove('has-max');
+      backdrop.classList.remove('active');
+      return;
+    }
+    // trigger CSS exit animation; backdrop fades via its opacity transition
+    maxPanel.classList.add('is-closing');
+    backdrop.classList.remove('active');
+    setTimeout(() => {
+      maxPanel.classList.remove('is-max', 'is-closing');
+      document.getElementById('stock-panels').classList.remove('has-max');
+    }, 210);
   }
 
   document.querySelectorAll('.panel-max-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const key   = btn.dataset.panel;
-      const panel = document.getElementById('panel-' + key);
-      const isMax = panel.classList.contains('is-max');
+      const key          = btn.dataset.panel;
+      const panel        = document.getElementById('panel-' + key);
+      const isMax        = panel.classList.contains('is-max');
+      const anyMaxBefore = !!document.querySelector('.stock-panel.is-max');
       closeMaxPanel();
       if (!isMax) {
-        panel.classList.add('is-max');
-        document.getElementById('stock-panels').classList.add('has-max');
-        document.getElementById('stock-panel-backdrop').classList.add('active');
-        btn.title = 'Restore';
-        btn.querySelector('[data-ic]').dataset.ic = 'shrink';
-        hydrateIcons(btn);
+        // if another panel was closing, wait for its exit animation before opening
+        const delay = anyMaxBefore ? 220 : 10;
+        setTimeout(() => {
+          panel.classList.remove('is-closing');
+          panel.classList.add('is-max');
+          document.getElementById('stock-panels').classList.add('has-max');
+          document.getElementById('stock-panel-backdrop').classList.add('active');
+          btn.title = 'Restore';
+          btn.querySelector('[data-ic]').dataset.ic = 'shrink';
+          hydrateIcons(btn);
+        }, delay);
       }
     });
   });

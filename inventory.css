@@ -220,7 +220,22 @@ select.ms{
 .btn-ghost:hover{background:var(--surface3);color:var(--ink);border-color:var(--border2);}
 
 /* ── FILTER PILLS ── */
-.filter-pills{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-pills{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+/* item filter bar */
+.item-filter-bar{margin-bottom:16px;position:relative;}
+.item-filter-input-wrap{position:relative;display:inline-flex;align-items:center;}
+.item-filter-input-wrap .ic{position:absolute;left:10px;width:14px;height:14px;color:var(--ink4);pointer-events:none;}
+.item-filter-input{font-family:inherit;font-size:13px;font-weight:500;padding:7px 12px 7px 32px;border:1px solid var(--border);border-radius:var(--rpill);background:var(--surface);color:var(--ink);outline:none;width:200px;transition:all var(--ease);}
+.item-filter-input::placeholder{color:var(--ink4);}
+.item-filter-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primaryB);width:240px;}
+.item-filter-dropdown{position:absolute;top:calc(100% + 4px);left:0;z-index:40;background:var(--surface);border:1px solid var(--border);border-radius:var(--r10);box-shadow:var(--sh);min-width:220px;max-height:220px;overflow-y:auto;}
+.item-filter-opt{padding:9px 14px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;}
+.item-filter-opt:hover{background:var(--primaryS);color:var(--primary);}
+.item-filter-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.item-filter-bar:not(.has-chips) .item-filter-chips{display:none;}
+.item-filter-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 8px 4px 10px;background:var(--primaryS);color:var(--primary);border:1px solid var(--primaryB);border-radius:var(--rpill);}
+.item-filter-chip-x{background:none;border:none;cursor:pointer;color:var(--primary);font-size:12px;line-height:1;padding:0 2px;opacity:.7;}
+.item-filter-chip-x:hover{opacity:1;}
 .filter-pill{font-family:inherit;font-size:12px;font-weight:700;padding:7px 14px;border-radius:var(--rpill);
   border:1px solid var(--border);background:var(--surface);color:var(--ink3);cursor:pointer;transition:all var(--ease);}
 .filter-pill:hover{background:var(--surface3);color:var(--ink);}

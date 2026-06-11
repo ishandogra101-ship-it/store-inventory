@@ -203,6 +203,14 @@
           <button class="filter-pill" data-filter="returned">Returns</button>
           <button class="filter-pill" data-filter="out">Issues</button>
         </div>
+        <div class="item-filter-bar" id="item-filter-bar">
+          <div class="item-filter-input-wrap">
+            <span data-ic="search"></span>
+            <input class="item-filter-input" id="item-filter-input" type="text" placeholder="Filter by item…" autocomplete="off">
+          </div>
+          <div class="item-filter-dropdown hidden" id="item-filter-dropdown"></div>
+          <div class="item-filter-chips" id="item-filter-chips"></div>
+        </div>
         <div class="tx-list" id="tx-list"></div>
         <div class="empty-state hidden" id="tx-empty">
           <div class="empty-state-ico"><span data-ic="history"></span></div>
@@ -530,8 +538,9 @@ let suppliers     = [];
 let locations     = [];
 let allTx         = [];
 let allAudit      = [];
-let currentFilter = 'all';
-let searchTerm    = '';
+let currentFilter    = 'all';
+let searchTerm       = '';
+let historyItemFilter = new Set(); // Set of itemIds
 let isAdmin       = false;
 let isFirstRun    = false;
 let accessData    = { approved: [], admins: [] };
@@ -1384,9 +1393,11 @@ function renderHistory() {
   const empty = document.getElementById('tx-empty');
   const count = document.getElementById('tx-count');
 
-  const filtered = currentFilter === 'all'
+  let filtered = currentFilter === 'all'
     ? allTx
     : allTx.filter(t => t.type !== 'void' && txKind(t) === currentFilter);
+  if (historyItemFilter.size > 0)
+    filtered = filtered.filter(t => historyItemFilter.has(t.itemId));
   count.textContent = filtered.length ? `${filtered.length} record${filtered.length !== 1 ? 's' : ''}` : '';
   list.innerHTML = '';
 
@@ -1458,6 +1469,64 @@ function setupFilters() {
       currentFilter = btn.dataset.filter;
       renderHistory();
     });
+  });
+  setupItemFilter();
+}
+
+function setupItemFilter() {
+  const input    = document.getElementById('item-filter-input');
+  const dropdown = document.getElementById('item-filter-dropdown');
+  const chips    = document.getElementById('item-filter-chips');
+
+  function renderDropdown(term) {
+    const t = term.trim().toLowerCase();
+    const matches = items.filter(i =>
+      i.name.toLowerCase().includes(t) && !historyItemFilter.has(i.id)
+    ).slice(0, 10);
+    dropdown.innerHTML = '';
+    if (!matches.length) { dropdown.classList.add('hidden'); return; }
+    matches.forEach(item => {
+      const opt = document.createElement('div');
+      opt.className = 'item-filter-opt';
+      opt.textContent = item.name;
+      opt.addEventListener('mousedown', e => {
+        e.preventDefault();
+        addItemChip(item);
+        input.value = '';
+        dropdown.classList.add('hidden');
+      });
+      dropdown.appendChild(opt);
+    });
+    dropdown.classList.remove('hidden');
+  }
+
+  function addItemChip(item) {
+    if (historyItemFilter.has(item.id)) return;
+    historyItemFilter.add(item.id);
+    const chip = document.createElement('span');
+    chip.className = 'item-filter-chip';
+    chip.dataset.id = item.id;
+    chip.innerHTML = `${esc(item.name)}<button class="item-filter-chip-x" aria-label="Remove">&#x2715;</button>`;
+    chip.querySelector('.item-filter-chip-x').addEventListener('click', () => {
+      historyItemFilter.delete(item.id);
+      chip.remove();
+      renderHistory();
+      if (historyItemFilter.size === 0) document.getElementById('item-filter-bar').classList.remove('has-chips');
+    });
+    chips.appendChild(chip);
+    document.getElementById('item-filter-bar').classList.add('has-chips');
+    renderHistory();
+  }
+
+  input.addEventListener('input', () => renderDropdown(input.value));
+  input.addEventListener('focus', () => { if (input.value) renderDropdown(input.value); });
+  input.addEventListener('blur',  () => setTimeout(() => dropdown.classList.add('hidden'), 120));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { dropdown.classList.add('hidden'); input.value = ''; }
+    if (e.key === 'Enter') {
+      const first = dropdown.querySelector('.item-filter-opt');
+      if (first) first.dispatchEvent(new MouseEvent('mousedown'));
+    }
   });
 }
 

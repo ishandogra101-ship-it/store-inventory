@@ -67,6 +67,13 @@
               <span class="stock-panel-title"><span data-ic="alert"></span>Critical · Needs Attention</span>
               <input class="panel-search" id="search-critical" type="text" placeholder="Search…" autocomplete="off">
               <span class="stock-panel-count" id="panel-critical-count"></span>
+              <select class="panel-sort-sel" id="sort-critical" data-panel="crit" title="Sort">
+                <option value="">Sort</option>
+                <option value="az">A → Z</option>
+                <option value="za">Z → A</option>
+                <option value="hl">Qty ↓</option>
+                <option value="lh">Qty ↑</option>
+              </select>
               <button class="panel-max-btn" data-panel="critical" title="Maximise"><span data-ic="expand"></span></button>
             </div>
             <div class="stock-grid" id="grid-critical"></div>
@@ -77,6 +84,13 @@
               <span class="stock-panel-title"><span data-ic="alert"></span>Needs Attention</span>
               <input class="panel-search" id="search-attn" type="text" placeholder="Search…" autocomplete="off">
               <span class="stock-panel-count" id="panel-attn-count"></span>
+              <select class="panel-sort-sel" id="sort-attn" data-panel="attn" title="Sort">
+                <option value="">Sort</option>
+                <option value="az">A → Z</option>
+                <option value="za">Z → A</option>
+                <option value="hl">Qty ↓</option>
+                <option value="lh">Qty ↑</option>
+              </select>
               <button class="panel-max-btn" data-panel="attn" title="Maximise"><span data-ic="expand"></span></button>
             </div>
             <div class="stock-grid" id="grid-attn"></div>
@@ -87,6 +101,13 @@
               <span class="stock-panel-title"><span data-ic="box"></span>All Stock</span>
               <input class="panel-search" id="search-ok" type="text" placeholder="Search…" autocomplete="off">
               <span class="stock-panel-count" id="panel-ok-count"></span>
+              <select class="panel-sort-sel" id="sort-ok" data-panel="ok" title="Sort">
+                <option value="">Sort</option>
+                <option value="az">A → Z</option>
+                <option value="za">Z → A</option>
+                <option value="hl">Qty ↓</option>
+                <option value="lh">Qty ↑</option>
+              </select>
               <button class="panel-max-btn" data-panel="ok" title="Maximise"><span data-ic="expand"></span></button>
             </div>
             <div class="stock-grid" id="grid-ok"></div>
@@ -742,12 +763,15 @@ function renderStock() {
   const pf = k => panelSearch[k].trim().toLowerCase();
   const byTerm = (list, k) => pf(k) ? list.filter(i => i.name.toLowerCase().includes(pf(k))) : list;
 
-  const critItems = byTerm(visible.filter(i => i.category === 'critical' && stockStatus(i) !== 'ok'), 'crit');
-  const attnItems = byTerm(visible.filter(i => i.category !== 'critical' && stockStatus(i) !== 'ok'), 'attn');
-  const okItems   = byTerm(visible.filter(i => stockStatus(i) === 'ok'), 'ok');
+  let critItems = byTerm(visible.filter(i => i.category === 'critical' && stockStatus(i) !== 'ok'), 'crit');
+  let attnItems = byTerm(visible.filter(i => i.category !== 'critical' && stockStatus(i) !== 'ok'), 'attn');
+  let okItems   = byTerm(visible.filter(i => stockStatus(i) === 'ok'), 'ok');
 
-  critItems.sort((a,b) => (stockStatus(a)==='zero'?0:1) - (stockStatus(b)==='zero'?0:1));
-  attnItems.sort((a,b) => (stockStatus(a)==='zero'?0:1) - (stockStatus(b)==='zero'?0:1));
+  if (!panelSort.crit) critItems.sort((a,b) => (stockStatus(a)==='zero'?0:1) - (stockStatus(b)==='zero'?0:1));
+  else critItems = applyPanelSort(critItems, 'crit');
+  if (!panelSort.attn) attnItems.sort((a,b) => (stockStatus(a)==='zero'?0:1) - (stockStatus(b)==='zero'?0:1));
+  else attnItems = applyPanelSort(attnItems, 'attn');
+  okItems = applyPanelSort(okItems, 'ok');
 
   critItems.forEach(i => gridCrit.appendChild(stockCard(i)));
   attnItems.forEach(i => gridAttn.appendChild(stockCard(i)));
@@ -763,6 +787,18 @@ function renderStock() {
 }
 
 const panelSearch = { crit: '', attn: '', ok: '' };
+const panelSort   = { crit: '', attn: '', ok: '' };
+
+function applyPanelSort(list, key) {
+  const s = panelSort[key];
+  if (!s) return list;
+  const out = [...list];
+  if      (s === 'az') out.sort((a,b) => a.name.localeCompare(b.name));
+  else if (s === 'za') out.sort((a,b) => b.name.localeCompare(a.name));
+  else if (s === 'hl') out.sort((a,b) => (b.currentStock||0) - (a.currentStock||0));
+  else if (s === 'lh') out.sort((a,b) => (a.currentStock||0) - (b.currentStock||0));
+  return out;
+}
 
 function setupSearch() {
   document.getElementById('stock-search').addEventListener('input', e => {
@@ -776,6 +812,12 @@ function setupSearch() {
   wire('search-critical', 'crit');
   wire('search-attn', 'attn');
   wire('search-ok', 'ok');
+  document.querySelectorAll('.panel-sort-sel').forEach(sel => {
+    sel.addEventListener('change', () => {
+      panelSort[sel.dataset.panel] = sel.value;
+      renderStock();
+    });
+  });
   document.getElementById('empty-settings-btn').addEventListener('click', () => switchTab('master'));
 
   function closeMaxPanel() {

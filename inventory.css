@@ -537,9 +537,11 @@ select.ms{
 .mob-tab.active .ic{transform:scale(1.1);}
 
 /* ── 3-PANEL STOCK DASHBOARD ── */
-/* 232px = appbar(58) + seg-wrap(56) + content-top-pad(18) + search(56) + section-hdr(38) + bottom-pad(6) */
-.stock-panels{display:flex;flex-direction:column;gap:8px;height:calc(100vh - 232px);}
-.stock-panel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--r14);overflow:hidden;box-shadow:var(--sh-sm);}
+/* dvh = dynamic viewport (excludes mobile browser chrome); 252px = appbar+segwrap+content-pad+search+section-hdr */
+.stock-panels{display:flex;flex-direction:column;gap:8px;height:calc(100dvh - 252px);overflow-y:auto;scrollbar-width:none;}
+.stock-panels::-webkit-scrollbar{display:none;}
+/* min-height guarantees panel never shrinks below 1 full card (header≈38 + grid-pad≈16 + card≈78 = 132px) */
+.stock-panel{flex:1;min-height:140px;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--r14);overflow:hidden;box-shadow:var(--sh-sm);}
 .stock-panel-hdr{flex-shrink:0;padding:8px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
 .stock-panel-title{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;}
 .stock-panel-title .ic{width:14px;height:14px;}
@@ -551,11 +553,19 @@ select.ms{
 .stock-panel-backdrop{position:fixed;inset:0;background:rgba(20,24,48,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:499;display:none;}
 .stock-panel-backdrop.active{display:block;animation:fadeIn .18s ease;}
 .stock-panel.is-max{position:fixed;inset:0;z-index:500;border-radius:0 !important;display:flex;flex-direction:column;}
-.panel-search{font-family:inherit;font-size:12px;font-weight:500;width:150px;margin-left:auto;margin-right:8px;
+.panel-search{font-family:inherit;font-size:12px;font-weight:500;width:130px;margin-left:auto;margin-right:6px;
   padding:4px 10px;border:1px solid var(--border);border-radius:var(--rpill);
   background:var(--surface);color:var(--ink);outline:none;transition:all var(--ease);}
 .panel-search::placeholder{color:var(--ink4);}
-.panel-search:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--primaryB);width:190px;}
+.panel-search:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--primaryB);width:160px;}
+.panel-sort-sel{font-family:inherit;font-size:11px;font-weight:600;color:var(--ink3);
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r6);
+  padding:3px 18px 3px 7px;outline:none;cursor:pointer;flex-shrink:0;margin-right:6px;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23646882' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 4px center;transition:all var(--ease);}
+.panel-sort-sel:focus{border-color:var(--primary);}
+.panel-sort-sel.active-sort{border-color:var(--primary);color:var(--primary);background:var(--primaryS);}
 .critical-hdr{border-bottom-color:rgba(220,79,87,.25);background:linear-gradient(90deg,var(--redS),var(--surface2));}
 .critical-hdr .stock-panel-title{color:var(--redD);}
 .attn-hdr{border-bottom-color:rgba(194,135,11,.25);background:linear-gradient(90deg,var(--amberS),var(--surface2));}
@@ -640,9 +650,9 @@ select.ms{
   .form-card{padding:18px;}
   .field-row{grid-template-columns:1fr;}
   .settings-grid{grid-template-columns:1fr;gap:14px;}
-  .stock-panels{height:auto;}
-  .stock-panel{min-height:140px;}
-  .stock-panel .stock-grid{grid-template-columns:repeat(2,1fr);max-height:220px;}
+  .stock-panels{height:auto;overflow-y:visible;}
+  .stock-panel{min-height:150px;}
+  .stock-panel .stock-grid{grid-template-columns:repeat(2,1fr);}
 }
 @media (min-width:641px){
   .mobile-tab-bar{display:none;}

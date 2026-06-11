@@ -710,17 +710,18 @@ function stockCard(item) {
       ? `<span class="stock-badge">${window.icon('alert')}Low</span>`
       : '';
   const thrTxt   = thr > 0 ? `min ${fmt(thr)}` : '';
-  const critBadge = item.category === 'critical'
-    ? `<span class="stock-critical-chip">Critical</span>` : '';
+  const critDot = item.category === 'critical'
+    ? `<span class="stock-critical-dot" title="Critical item"></span>` : '';
   const card = document.createElement('div');
   card.className = `stock-card ${cls}`;
   card.style.cursor = 'pointer';
   card.innerHTML = `
+    ${critDot}
     <div class="stock-card-name">${esc(item.name)}</div>
     <div class="stock-card-qty">${fmt(stock)}</div>
     <div class="stock-card-unit">${esc(item.unit)}</div>
     <div class="stock-card-bar"><div class="stock-card-bar-fill" style="width:${fill}%"></div></div>
-    <div class="stock-card-foot"><span class="stock-thr">${thrTxt}</span>${critBadge}${badge}</div>
+    <div class="stock-card-foot"><span class="stock-thr">${thrTxt}</span>${badge}</div>
   `;
   card.addEventListener('click', () => showItemDetail(item));
   return card;

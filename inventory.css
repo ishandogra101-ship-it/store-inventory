@@ -575,7 +575,11 @@ select.ms{
 .settings-add-row .w-cat{width:100px;flex-shrink:0;}
 .settings-item-badge.critical-badge{background:var(--redS);color:var(--redD);border-color:rgba(220,38,38,.15);}
 .stock-card{cursor:pointer;}
-.stock-critical-chip{font-size:9px;font-weight:600;background:var(--redS);color:var(--redD);border:1px solid rgba(220,38,38,.2);padding:1px 6px;border-radius:var(--rpill);}
+.stock-critical-dot{
+  position:absolute;top:8px;right:8px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--red);flex-shrink:0;
+}
 
 /* ── ITEM DETAIL MODAL ── */
 .idet-modal{max-width:540px;width:92vw;max-height:85vh;overflow-y:auto;padding:0;}

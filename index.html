@@ -62,29 +62,32 @@
         </div>
 
         <div class="stock-panels" id="stock-panels">
-          <div class="stock-panel">
+          <div class="stock-panel" id="panel-critical">
             <div class="stock-panel-hdr critical-hdr">
               <span class="stock-panel-title"><span data-ic="alert"></span>Critical · Needs Attention</span>
               <input class="panel-search" id="search-critical" type="text" placeholder="Search…" autocomplete="off">
               <span class="stock-panel-count" id="panel-critical-count"></span>
+              <button class="panel-max-btn" data-panel="critical" title="Maximise"><span data-ic="expand"></span></button>
             </div>
             <div class="stock-grid" id="grid-critical"></div>
             <div class="stock-panel-empty hidden" id="empty-critical">All critical items are stocked</div>
           </div>
-          <div class="stock-panel">
+          <div class="stock-panel" id="panel-attn">
             <div class="stock-panel-hdr attn-hdr">
               <span class="stock-panel-title"><span data-ic="alert"></span>Needs Attention</span>
               <input class="panel-search" id="search-attn" type="text" placeholder="Search…" autocomplete="off">
               <span class="stock-panel-count" id="panel-attn-count"></span>
+              <button class="panel-max-btn" data-panel="attn" title="Maximise"><span data-ic="expand"></span></button>
             </div>
             <div class="stock-grid" id="grid-attn"></div>
             <div class="stock-panel-empty hidden" id="empty-attn">No items need attention</div>
           </div>
-          <div class="stock-panel">
+          <div class="stock-panel" id="panel-ok">
             <div class="stock-panel-hdr ok-hdr">
               <span class="stock-panel-title"><span data-ic="box"></span>All Stock</span>
               <input class="panel-search" id="search-ok" type="text" placeholder="Search…" autocomplete="off">
               <span class="stock-panel-count" id="panel-ok-count"></span>
+              <button class="panel-max-btn" data-panel="ok" title="Maximise"><span data-ic="expand"></span></button>
             </div>
             <div class="stock-grid" id="grid-ok"></div>
             <div class="stock-panel-empty hidden" id="empty-ok">No items with sufficient stock</div>
@@ -754,6 +757,29 @@ function setupSearch() {
   wire('search-attn', 'attn');
   wire('search-ok', 'ok');
   document.getElementById('empty-settings-btn').addEventListener('click', () => switchTab('master'));
+
+  document.querySelectorAll('.panel-max-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key  = btn.dataset.panel;
+      const panel = document.getElementById('panel-' + key);
+      const isMax = panel.classList.contains('is-max');
+      // reset all panels first
+      document.querySelectorAll('.stock-panel').forEach(p => p.classList.remove('is-max'));
+      document.getElementById('stock-panels').classList.remove('has-max');
+      document.querySelectorAll('.panel-max-btn').forEach(b => {
+        b.title = 'Maximise';
+        b.querySelector('[data-ic]').dataset.ic = 'expand';
+        hydrateIcons(b);
+      });
+      if (!isMax) {
+        panel.classList.add('is-max');
+        document.getElementById('stock-panels').classList.add('has-max');
+        btn.title = 'Restore';
+        btn.querySelector('[data-ic]').dataset.ic = 'shrink';
+        hydrateIcons(btn);
+      }
+    });
+  });
 }
 
 /* ── SETTINGS TAB ── */

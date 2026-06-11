@@ -520,6 +520,12 @@ select.ms{
 .stock-panel-title{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;}
 .stock-panel-title .ic{width:14px;height:14px;}
 .stock-panel-count{font-size:11px;font-weight:700;color:var(--ink4);background:var(--surface3);padding:2px 8px;border-radius:var(--rpill);border:1px solid var(--border);}
+.panel-max-btn{flex-shrink:0;width:26px;height:26px;margin-left:6px;border:1px solid var(--border);background:var(--surface);border-radius:var(--r6);display:grid;place-items:center;cursor:pointer;color:var(--ink4);transition:all var(--ease);}
+.panel-max-btn:hover{background:var(--surface3);color:var(--ink);}
+.panel-max-btn .ic{width:13px;height:13px;}
+/* maximise state */
+.stock-panels.has-max .stock-panel{display:none;}
+.stock-panels.has-max .stock-panel.is-max{display:flex;flex:1;}
 .panel-search{font-family:inherit;font-size:12px;font-weight:500;width:150px;margin-left:auto;margin-right:8px;
   padding:4px 10px;border:1px solid var(--border);border-radius:var(--rpill);
   background:var(--surface);color:var(--ink);outline:none;transition:all var(--ease);}

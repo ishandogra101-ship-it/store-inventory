@@ -93,6 +93,7 @@
             <div class="stock-panel-empty hidden" id="empty-ok">No items with sufficient stock</div>
           </div>
         </div>
+        <div class="stock-panel-backdrop" id="stock-panel-backdrop"></div>
 
         <div class="empty-state hidden" id="stock-empty">
           <div class="empty-state-ico"><span data-ic="box"></span></div>
@@ -210,6 +211,14 @@
           </div>
           <div class="item-filter-dropdown hidden" id="item-filter-dropdown"></div>
           <div class="item-filter-chips" id="item-filter-chips"></div>
+        </div>
+        <div class="date-range-bar" id="date-range-bar">
+          <span data-ic="tag"></span>
+          <label class="date-range-label">From</label>
+          <input class="date-range-input" id="hist-date-from" type="date">
+          <label class="date-range-label">To</label>
+          <input class="date-range-input" id="hist-date-to" type="date">
+          <button class="date-range-clear hidden" id="date-range-clear"><span data-ic="x"></span>Clear dates</button>
         </div>
         <div class="tx-list" id="tx-list"></div>
         <div class="empty-state hidden" id="tx-empty">
@@ -541,6 +550,8 @@ let allAudit      = [];
 let currentFilter    = 'all';
 let searchTerm       = '';
 let historyItemFilter = new Set(); // Set of itemIds
+let historyDateFrom = null;
+let historyDateTo   = null;
 let isAdmin       = false;
 let isFirstRun    = false;
 let accessData    = { approved: [], admins: [] };
@@ -767,27 +778,37 @@ function setupSearch() {
   wire('search-ok', 'ok');
   document.getElementById('empty-settings-btn').addEventListener('click', () => switchTab('master'));
 
+  function closeMaxPanel() {
+    document.querySelectorAll('.stock-panel').forEach(p => p.classList.remove('is-max'));
+    document.getElementById('stock-panels').classList.remove('has-max');
+    document.getElementById('stock-panel-backdrop').classList.remove('active');
+    document.querySelectorAll('.panel-max-btn').forEach(b => {
+      b.title = 'Maximise';
+      b.querySelector('[data-ic]').dataset.ic = 'expand';
+      hydrateIcons(b);
+    });
+  }
+
   document.querySelectorAll('.panel-max-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const key  = btn.dataset.panel;
+      const key   = btn.dataset.panel;
       const panel = document.getElementById('panel-' + key);
       const isMax = panel.classList.contains('is-max');
-      // reset all panels first
-      document.querySelectorAll('.stock-panel').forEach(p => p.classList.remove('is-max'));
-      document.getElementById('stock-panels').classList.remove('has-max');
-      document.querySelectorAll('.panel-max-btn').forEach(b => {
-        b.title = 'Maximise';
-        b.querySelector('[data-ic]').dataset.ic = 'expand';
-        hydrateIcons(b);
-      });
+      closeMaxPanel();
       if (!isMax) {
         panel.classList.add('is-max');
         document.getElementById('stock-panels').classList.add('has-max');
+        document.getElementById('stock-panel-backdrop').classList.add('active');
         btn.title = 'Restore';
         btn.querySelector('[data-ic]').dataset.ic = 'shrink';
         hydrateIcons(btn);
       }
     });
+  });
+
+  document.getElementById('stock-panel-backdrop').addEventListener('click', closeMaxPanel);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('stock-panels').classList.contains('has-max')) closeMaxPanel();
   });
 }
 
@@ -1398,6 +1419,15 @@ function renderHistory() {
     : allTx.filter(t => t.type !== 'void' && txKind(t) === currentFilter);
   if (historyItemFilter.size > 0)
     filtered = filtered.filter(t => historyItemFilter.has(t.itemId));
+  if (historyDateFrom || historyDateTo) {
+    filtered = filtered.filter(t => {
+      const ts = t.createdAt?.toDate ? t.createdAt.toDate() : null;
+      if (!ts) return true;
+      if (historyDateFrom && ts < historyDateFrom) return false;
+      if (historyDateTo   && ts > historyDateTo)   return false;
+      return true;
+    });
+  }
   count.textContent = filtered.length ? `${filtered.length} record${filtered.length !== 1 ? 's' : ''}` : '';
   list.innerHTML = '';
 
@@ -1471,6 +1501,7 @@ function setupFilters() {
     });
   });
   setupItemFilter();
+  setupDateFilter();
 }
 
 function setupItemFilter() {
@@ -1527,6 +1558,32 @@ function setupItemFilter() {
       const first = dropdown.querySelector('.item-filter-opt');
       if (first) first.dispatchEvent(new MouseEvent('mousedown'));
     }
+  });
+}
+
+function setupDateFilter() {
+  const fromInput = document.getElementById('hist-date-from');
+  const toInput   = document.getElementById('hist-date-to');
+  const clearBtn  = document.getElementById('date-range-clear');
+  function parseLocalDate(str, isEnd) {
+    const [y, m, d] = str.split('-').map(Number);
+    return isEnd ? new Date(y, m-1, d, 23, 59, 59) : new Date(y, m-1, d, 0, 0, 0);
+  }
+  function update() {
+    historyDateFrom = fromInput.value ? parseLocalDate(fromInput.value, false) : null;
+    historyDateTo   = toInput.value   ? parseLocalDate(toInput.value,   true)  : null;
+    clearBtn.classList.toggle('hidden', !fromInput.value && !toInput.value);
+    renderHistory();
+  }
+  fromInput.addEventListener('change', update);
+  toInput.addEventListener('change', update);
+  clearBtn.addEventListener('click', () => {
+    fromInput.value = '';
+    toInput.value   = '';
+    historyDateFrom = null;
+    historyDateTo   = null;
+    clearBtn.classList.add('hidden');
+    renderHistory();
   });
 }
 

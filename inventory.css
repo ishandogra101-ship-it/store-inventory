@@ -682,8 +682,8 @@ select.ms{
   .field-row{grid-template-columns:1fr;}
   .settings-grid{grid-template-columns:1fr;}
   .stock-panels{height:auto;overflow-y:visible;}
-  .stock-panel{min-height:130px;}
-  .stock-panel .stock-grid{grid-template-columns:repeat(2,1fr);}
+  .stock-panel{flex:none;height:auto;min-height:unset;}
+  .stock-panel .stock-grid{flex:none;height:auto;min-height:unset;overflow:visible;grid-template-columns:repeat(2,1fr);}
 }
 @media (min-width:641px){
   .mobile-tab-bar{display:none;}

@@ -22,7 +22,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;font-size:13px;-webkit-tap-highlight-color:transparent;}
 body{
-  font-family:'Inter',system-ui,sans-serif;
+  font-family:'Lora','Georgia',serif;
   background:var(--bg);color:var(--ink);
   -webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
@@ -49,7 +49,7 @@ body{
   background:var(--primary);color:#fff;display:grid;place-items:center;
 }
 .brand-mark .ic{width:13px;height:13px;stroke-width:2.2;}
-.brand-name{font-weight:700;font-size:13.5px;color:var(--ink);letter-spacing:-.02em;white-space:nowrap;}
+.brand-name{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:14px;color:var(--ink);letter-spacing:-.01em;white-space:nowrap;}
 .brand-name span{color:var(--ink4);font-weight:400;}
 .nav{display:flex;align-items:center;gap:2px;margin-left:auto;flex-shrink:0;}
 .nav-user{font-size:12px;font-weight:500;color:var(--ink3);max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:6px;}
@@ -96,7 +96,7 @@ body{
 
 /* ── SECTION HEADER ── */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px;}
-.section-title{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:-.01em;display:flex;align-items:center;gap:6px;}
+.section-title{font-family:'Playfair Display',Georgia,serif;font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.01em;display:flex;align-items:center;gap:6px;}
 .section-meta{font-size:11.5px;color:var(--ink3);font-weight:500;}
 .subhead{
   font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
@@ -128,14 +128,24 @@ body{
   border-radius:var(--r12);padding:12px 13px 10px;
   box-shadow:var(--sh);
   transition:all var(--ease);
+  display:flex;flex-direction:column;
 }
 .stock-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.05);transform:translateY(-1px);}
-.stock-card-name{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:6px;line-height:1.25;padding-right:6px;}
-.stock-card-qty{font-size:22px;font-weight:700;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;}
+.stock-card-name{
+  font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:6px;
+  line-height:1.3;
+  /* clamp to exactly 2 lines */
+  height:calc(12px * 1.3 * 2);
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+}
+.stock-card-qty{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;}
 .stock-card-unit{font-size:9px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
 .stock-card-bar{height:3px;border-radius:var(--rpill);background:var(--surface3);margin-top:9px;overflow:hidden;}
 .stock-card-bar-fill{height:100%;border-radius:var(--rpill);transition:width .4s ease;}
-.stock-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+.stock-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:6px;}
 .stock-thr{font-size:10px;color:var(--ink4);font-weight:500;}
 .stock-badge{
   font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
@@ -280,7 +290,7 @@ select.ms{
 .settings-grid .settings-section{margin-bottom:0;}
 .settings-section{background:var(--surface);border-radius:var(--r14);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh);}
 .settings-section-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
-.settings-section-title{font-size:12.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;}
+.settings-section-title{font-family:'Playfair Display',Georgia,serif;font-size:13.5px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;}
 .settings-section-title .ic{width:13px;height:13px;color:var(--primary);}
 .settings-section-body{padding:12px 14px;}
 .settings-add-row{display:flex;gap:8px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap;}
@@ -319,7 +329,7 @@ select.ms{
 .kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);}
 .kpi-ico{width:28px;height:28px;border-radius:var(--r10);display:grid;place-items:center;background:var(--surface3);color:var(--ink3);}
 .kpi-ico .ic{width:14px;height:14px;}
-.kpi-value{font-size:24px;font-weight:700;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;}
+.kpi-value{font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:700;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;}
 .kpi-sub{font-size:11px;color:var(--ink4);margin-top:4px;}
 .kpi-green .kpi-value{color:var(--green);} .kpi-green .kpi-ico{background:var(--greenS);color:var(--greenD);}
 .kpi-amber .kpi-value{color:var(--amber);} .kpi-amber .kpi-ico{background:var(--amberS);color:var(--amberD);}
@@ -330,7 +340,7 @@ select.ms{
 /* ── CHARTS ── */
 .charts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
 .chart-card{background:var(--surface);border-radius:var(--r14);padding:16px;box-shadow:var(--sh);}
-.chart-card-title{font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.chart-card-title{font-family:'Playfair Display',Georgia,serif;font-size:14px;font-weight:700;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
 .chart-card-title .ic{width:13px;height:13px;color:var(--ink3);}
 .chart-card canvas{max-height:210px;width:100%;}
 
@@ -359,7 +369,7 @@ select.ms{
 .modal-overlay.show .modal{transform:none;}
 .modal-ico{width:36px;height:36px;border-radius:var(--r12);display:grid;place-items:center;margin-bottom:12px;background:var(--redS);color:var(--redD);}
 .modal-ico .ic{width:18px;height:18px;stroke-width:2;}
-.modal-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:5px;letter-spacing:-.01em;}
+.modal-title{font-family:'Playfair Display',Georgia,serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:5px;letter-spacing:-.01em;}
 .modal-body{font-size:13px;color:var(--ink3);line-height:1.55;}
 .modal-body strong{color:var(--ink);font-weight:600;}
 .modal-warn{background:var(--amberS);border-left:3px solid var(--amberD);border-radius:var(--r8);
@@ -461,8 +471,8 @@ select.ms{
 .login-brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;justify-content:center;}
 .login-brand .brand-mark{width:32px;height:32px;border-radius:8px;}
 .login-brand .brand-mark .ic{width:17px;height:17px;}
-.login-brand-name{font-weight:700;font-size:18px;color:var(--ink);letter-spacing:-.02em;}
-.login-title{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:4px;letter-spacing:-.01em;}
+.login-brand-name{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:20px;color:var(--ink);letter-spacing:-.01em;}
+.login-title{font-family:'Playfair Display',Georgia,serif;font-size:19px;font-weight:700;color:var(--ink);margin-bottom:4px;letter-spacing:-.01em;}
 .login-sub{font-size:13px;color:var(--ink3);margin-bottom:20px;}
 .login-form .mf{margin-bottom:12px;}
 .login-submit{width:100%;font-family:inherit;font-size:13.5px;font-weight:600;padding:10px;border-radius:var(--r10);
@@ -497,7 +507,7 @@ select.ms{
 .stock-panels::-webkit-scrollbar{display:none;}
 .stock-panel{flex:1;min-height:120px;display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r14);overflow:hidden;box-shadow:var(--sh);}
 .stock-panel-hdr{flex-shrink:0;padding:6px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;min-height:36px;}
-.stock-panel-title{font-size:11.5px;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:5px;}
+.stock-panel-title{font-family:'Playfair Display',Georgia,serif;font-size:12.5px;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:5px;}
 .stock-panel-title .ic{width:12px;height:12px;}
 .stock-panel-count{font-size:10px;font-weight:600;color:var(--ink4);background:var(--surface3);padding:1px 8px;border-radius:var(--rpill);}
 .panel-max-btn{flex-shrink:0;width:22px;height:22px;margin-left:4px;border:1px solid var(--border);background:var(--surface);border-radius:var(--r6);display:grid;place-items:center;cursor:pointer;color:var(--ink4);transition:all var(--ease);}
@@ -547,11 +557,17 @@ select.ms{
 /* compact cards inside panels */
 .stock-panel .stock-card{padding:7px 8px 6px;border-radius:var(--r10);box-shadow:none;border:1px solid var(--border);}
 .stock-panel .stock-card:hover{box-shadow:var(--sh);transform:none;border-color:var(--ink5);}
-.stock-panel .stock-card-name{font-size:10.5px;margin-bottom:3px;line-height:1.2;}
+.stock-panel .stock-card-name{
+  font-size:10.5px;margin-bottom:3px;line-height:1.2;
+  /* single line truncation */
+  height:auto;display:block;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-line-clamp:unset;-webkit-box-orient:unset;
+}
 .stock-panel .stock-card-qty{font-size:15px;}
 .stock-panel .stock-card-unit{font-size:8.5px;margin-top:1px;}
 .stock-panel .stock-card-bar{margin-top:5px;height:2px;}
-.stock-panel .stock-card-foot{margin-top:3px;}
+.stock-panel .stock-card-foot{margin-top:auto;padding-top:3px;}
 .stock-panel .stock-thr{font-size:9px;}
 .stock-panel .stock-badge{font-size:8px;padding:0 5px;}
 
@@ -564,7 +580,7 @@ select.ms{
 /* ── ITEM DETAIL MODAL ── */
 .idet-modal{max-width:540px;width:92vw;max-height:85vh;overflow-y:auto;padding:0;}
 .idet-header{display:flex;align-items:flex-start;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid var(--border);}
-.idet-name{font-size:15.5px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;}
+.idet-name{font-family:'Playfair Display',Georgia,serif;font-size:17px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em;}
 .idet-chips{display:flex;flex-wrap:wrap;gap:5px;}
 .idet-chip{font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:var(--rpill);background:var(--surface3);color:var(--ink3);border:1px solid var(--border);}
 .idet-chip-critical{background:var(--redS);color:var(--redD);border-color:rgba(220,38,38,.2);}
